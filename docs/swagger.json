@@ -1,0 +1,52 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API Server for application",
+        "title": "Test task Swartway",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/ping": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Служебные"
+                ],
+                "summary": "Пинг сервиса",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "thttp.ResponseWithDetails-string": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

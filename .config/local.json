@@ -1,0 +1,9 @@
+{
+  "port": "80",
+  "databases": {
+    "postgres": {
+      "connectionString": "postgres://test:test@localhost:5466/test",
+      "migrationPath": "./migration"
+    }
+  }
+}

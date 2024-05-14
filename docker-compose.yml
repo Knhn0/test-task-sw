@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: props-api
+    restart: unless-stopped
+    environment:
+      ENV: test
+    depends_on:
+      - postgres
+    ports:
+      - "5743:80"
+
+  postgres:
+    image: postgres:16.0
+    container_name: test-postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    ports:
+      - "5466:5432"
+
+volumes:
+  postgres-data:
