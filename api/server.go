@@ -46,6 +46,14 @@ func NewServer(
 		{
 			serviceGroup.GET("/ping", handler.Ping())
 		}
+
+		userGroup := apiGroup.Group("/users")
+		{
+			userGroup.POST("create", handler.CreateUser(logger))
+			userGroup.DELETE("delete/:userId", handler.DeleteUser(logger))
+			userGroup.GET("list/:companyId", handler.ListUsersByCompanyId(logger))
+			userGroup.GET("list/department/:depName", handler.ListUsersByDepartment(logger))
+		}
 	}
 	return &Server{
 		Server: &http.Server{

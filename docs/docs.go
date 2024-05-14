@@ -36,9 +36,414 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/users/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Созданеие пользователя",
+                "parameters": [
+                    {
+                        "description": "Данные пользователя",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.createUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/users/delete/{userId}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Удаление пользователя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор пользователя",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseOk"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/list/department/{depName}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Получение пользователей по отделу",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Название отдела",
+                        "name": "depName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_listUsersByDepartmentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseError"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/list/{companyId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Получение пользователей по id компании",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор компании",
+                        "name": "companyId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_listUsersByCompanyIdResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "handler.createUserRequest": {
+            "type": "object",
+            "required": [
+                "company_id",
+                "department_name",
+                "department_phone",
+                "id",
+                "name",
+                "passport_name",
+                "passport_number",
+                "phone",
+                "surname"
+            ],
+            "properties": {
+                "company_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "department_name": {
+                    "type": "string",
+                    "example": "First Department"
+                },
+                "department_phone": {
+                    "type": "string",
+                    "example": "+7(987)1112233"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Ivan"
+                },
+                "passport_name": {
+                    "type": "string",
+                    "example": "Russian passport"
+                },
+                "passport_number": {
+                    "type": "string",
+                    "example": "1122 112233"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+7(987)6667788"
+                },
+                "surname": {
+                    "type": "string",
+                    "example": "Ivanov"
+                }
+            }
+        },
+        "handler.listUsersByCompanyIdElement": {
+            "type": "object",
+            "required": [
+                "company_id",
+                "department_name",
+                "department_phone",
+                "id",
+                "name",
+                "passport_name",
+                "passport_number",
+                "phone",
+                "surname"
+            ],
+            "properties": {
+                "company_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "department_name": {
+                    "type": "string",
+                    "example": "First Department"
+                },
+                "department_phone": {
+                    "type": "string",
+                    "example": "+7(987)1112233"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Ivan"
+                },
+                "passport_name": {
+                    "type": "string",
+                    "example": "Russian passport"
+                },
+                "passport_number": {
+                    "type": "string",
+                    "example": "1122 112233"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+7(987)6667788"
+                },
+                "surname": {
+                    "type": "string",
+                    "example": "Ivanov"
+                }
+            }
+        },
+        "handler.listUsersByDepartmentElement": {
+            "type": "object",
+            "required": [
+                "company_id",
+                "department_name",
+                "department_phone",
+                "id",
+                "name",
+                "passport_name",
+                "passport_number",
+                "phone",
+                "surname"
+            ],
+            "properties": {
+                "company_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "department_name": {
+                    "type": "string",
+                    "example": "First Department"
+                },
+                "department_phone": {
+                    "type": "string",
+                    "example": "+7(987)1112233"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Ivan"
+                },
+                "passport_name": {
+                    "type": "string",
+                    "example": "Russian passport"
+                },
+                "passport_number": {
+                    "type": "string",
+                    "example": "1122 112233"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+7(987)6667788"
+                },
+                "surname": {
+                    "type": "string",
+                    "example": "Ivanov"
+                }
+            }
+        },
+        "thttp.ResponseError": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "result": {}
+            }
+        },
+        "thttp.ResponseOk": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "result": {}
+            }
+        },
+        "thttp.ResponseWithDetails-handler_listUsersByCompanyIdResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.listUsersByCompanyIdElement"
+                    }
+                }
+            }
+        },
+        "thttp.ResponseWithDetails-handler_listUsersByDepartmentResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "result": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.listUsersByDepartmentElement"
+                    }
+                }
+            }
+        },
         "thttp.ResponseWithDetails-string": {
             "type": "object",
             "properties": {
