@@ -53,6 +53,7 @@ func NewServer(
 			userGroup.DELETE("delete/:userId", handler.DeleteUser(logger))
 			userGroup.GET("list/:companyId", handler.ListUsersByCompanyId(logger))
 			userGroup.GET("list/department/:depName", handler.ListUsersByDepartment(logger))
+			userGroup.PUT("update/:userId", handler.UpdateUser(logger))
 		}
 	}
 	return &Server{

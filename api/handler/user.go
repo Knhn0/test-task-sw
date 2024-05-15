@@ -99,15 +99,15 @@ type listUserByCompanyIdUri struct {
 type listUsersByCompanyIdResponse []listUsersByCompanyIdElement
 
 type listUsersByCompanyIdElement struct {
-	Id              int    `json:"id" binding:"required" example:"1"`
-	Name            string `json:"name" binding:"required" example:"Ivan"`
-	Surname         string `json:"surname" binding:"required" example:"Ivanov"`
-	Phone           string `json:"phone" binding:"required" example:"+7(987)6667788"`
-	CompanyId       int    `json:"company_id" binding:"required" example:"1"`
-	PassportName    string `json:"passport_name" binding:"required" example:"Russian passport"`
-	PassportNumber  string `json:"passport_number" binding:"required" example:"1122 112233"`
-	DepartmentName  string `json:"department_name" binding:"required" example:"First Department"`
-	DepartmentPhone string `json:"department_phone" binding:"required" example:"+7(987)1112233"`
+	Id              int    `json:"id"`
+	Name            string `json:"name"`
+	Surname         string `json:"surname"`
+	Phone           string `json:"phone"`
+	CompanyId       int    `json:"company_id"`
+	PassportName    string `json:"passport_name"`
+	PassportNumber  string `json:"passport_number"`
+	DepartmentName  string `json:"department_name"`
+	DepartmentPhone string `json:"department_phone"`
 }
 
 func newListUsersByCompanyIdResponse(users []entity.User) listUsersByCompanyIdResponse {
@@ -172,15 +172,15 @@ type listUsersByDepartmentUri struct {
 type listUsersByDepartmentResponse []listUsersByDepartmentElement
 
 type listUsersByDepartmentElement struct {
-	Id              int    `json:"id" binding:"required" example:"1"`
-	Name            string `json:"name" binding:"required" example:"Ivan"`
-	Surname         string `json:"surname" binding:"required" example:"Ivanov"`
-	Phone           string `json:"phone" binding:"required" example:"+7(987)6667788"`
-	CompanyId       int    `json:"company_id" binding:"required" example:"1"`
-	PassportName    string `json:"passport_name" binding:"required" example:"Russian passport"`
-	PassportNumber  string `json:"passport_number" binding:"required" example:"1122 112233"`
-	DepartmentName  string `json:"department_name" binding:"required" example:"First Department"`
-	DepartmentPhone string `json:"department_phone" binding:"required" example:"+7(987)1112233"`
+	Id              int    `json:"id"`
+	Name            string `json:"name"`
+	Surname         string `json:"surname"`
+	Phone           string `json:"phone"`
+	CompanyId       int    `json:"company_id"`
+	PassportName    string `json:"passport_name"`
+	PassportNumber  string `json:"passport_number"`
+	DepartmentName  string `json:"department_name"`
+	DepartmentPhone string `json:"department_phone"`
 }
 
 func newListUsersByDepartmentResponse(users []entity.User) listUsersByDepartmentResponse {
@@ -235,5 +235,94 @@ func ListUsersByDepartment(logger *zap.SugaredLogger) gin.HandlerFunc {
 
 		response := 1
 		thttp.OkResponseWithResult(c, response)
+	}
+}
+
+type updateUserUri struct {
+	userId string `uri:"userId"`
+}
+
+type updateUserRequest struct {
+	Name            *string `json:"name"`
+	Surname         *string `json:"surname"`
+	Phone           *string `json:"phone"`
+	CompanyId       *int    `json:"company_id"`
+	PassportName    *string `json:"passport_name"`
+	PassportNumber  *string `json:"passport_number"`
+	DepartmentName  *string `json:"department_name"`
+	DepartmentPhone *string `json:"department_phone"`
+}
+
+type updateUserResponse struct {
+	Id              int    `json:"id" binding:"required"`
+	Name            string `json:"name"`
+	Surname         string `json:"surname"`
+	Phone           string `json:"phone"`
+	CompanyId       int    `json:"company_id"`
+	PassportName    string `json:"passport_name"`
+	PassportNumber  string `json:"passport_number"`
+	DepartmentName  string `json:"department_name"`
+	DepartmentPhone string `json:"department_phone"`
+}
+
+func newUpdateUserResponse(user entity.User) updateUserResponse {
+	return updateUserResponse{
+		Id:              user.Id,
+		Name:            user.Name,
+		Surname:         user.Surname,
+		Phone:           user.Phone,
+		CompanyId:       user.CompanyId,
+		PassportName:    user.Passport.Name,
+		PassportNumber:  user.Passport.Number,
+		DepartmentName:  user.Department.Name,
+		DepartmentPhone: user.Department.Phone,
+	}
+}
+
+// UpdateUser godoc
+// @Summary     Изменение данных пользователя
+// @Tags		Users
+// @Accept      json
+// @Produce     json
+// @Param       userId path string true "Идентификатор пользователя"
+// @Param 		request body updateUserRequest true "da"
+// @Success     200 {object} thttp.ResponseWithDetails[updateUserResponse]
+// @Failure     400 {object} thttp.ResponseError "Bad request"
+// @Failure     409 {object} thttp.ResponseError "Already exists"
+// @Failure     500 {object} thttp.ResponseError "Internal server error"
+// @Router      /api/users/update/{userId} [put]
+func UpdateUser(logger *zap.SugaredLogger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req updateUserRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
+			return
+		}
+
+		var id updateUserUri
+		if err := c.ShouldBindUri(&id); err != nil {
+			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
+			return
+		}
+
+		var err error
+		switch {
+		case err == nil:
+		case errors.Is(err, service.ErrNotFound):
+			logger.Error(err.Error())
+			thttp.ErrorResponse(c, http.StatusNotFound, service.ErrNotFound.Error())
+			return
+		case errors.Is(err, service.ErrAlreadyExists):
+			logger.Error(err.Error())
+			thttp.ErrorResponse(c, http.StatusConflict, service.ErrAlreadyExists.Error())
+			return
+		default:
+			logger.Error(err.Error())
+			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+			return
+		}
+
+		//response :=
+		thttp.OkResponseWithResult(c, 1)
 	}
 }

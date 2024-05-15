@@ -42,82 +42,86 @@ definitions:
   handler.listUsersByCompanyIdElement:
     properties:
       company_id:
-        example: 1
         type: integer
       department_name:
-        example: First Department
         type: string
       department_phone:
-        example: +7(987)1112233
         type: string
       id:
-        example: 1
         type: integer
       name:
-        example: Ivan
         type: string
       passport_name:
-        example: Russian passport
         type: string
       passport_number:
-        example: 1122 112233
         type: string
       phone:
-        example: +7(987)6667788
         type: string
       surname:
-        example: Ivanov
         type: string
-    required:
-    - company_id
-    - department_name
-    - department_phone
-    - id
-    - name
-    - passport_name
-    - passport_number
-    - phone
-    - surname
     type: object
   handler.listUsersByDepartmentElement:
     properties:
       company_id:
-        example: 1
         type: integer
       department_name:
-        example: First Department
         type: string
       department_phone:
-        example: +7(987)1112233
         type: string
       id:
-        example: 1
         type: integer
       name:
-        example: Ivan
         type: string
       passport_name:
-        example: Russian passport
         type: string
       passport_number:
-        example: 1122 112233
         type: string
       phone:
-        example: +7(987)6667788
         type: string
       surname:
-        example: Ivanov
+        type: string
+    type: object
+  handler.updateUserRequest:
+    properties:
+      company_id:
+        type: integer
+      department_name:
+        type: string
+      department_phone:
+        type: string
+      name:
+        type: string
+      passport_name:
+        type: string
+      passport_number:
+        type: string
+      phone:
+        type: string
+      surname:
+        type: string
+    type: object
+  handler.updateUserResponse:
+    properties:
+      company_id:
+        type: integer
+      department_name:
+        type: string
+      department_phone:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      passport_name:
+        type: string
+      passport_number:
+        type: string
+      phone:
+        type: string
+      surname:
         type: string
     required:
-    - company_id
-    - department_name
-    - department_phone
     - id
-    - name
-    - passport_name
-    - passport_number
-    - phone
-    - surname
     type: object
   thttp.ResponseError:
     properties:
@@ -164,6 +168,17 @@ definitions:
         items:
           $ref: '#/definitions/handler.listUsersByDepartmentElement'
         type: array
+    type: object
+  thttp.ResponseWithDetails-handler_updateUserResponse:
+    properties:
+      description:
+        type: string
+      error_code:
+        type: integer
+      ok:
+        type: boolean
+      result:
+        $ref: '#/definitions/handler.updateUserResponse'
     type: object
   thttp.ResponseWithDetails-string:
     properties:
@@ -305,6 +320,44 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Получение пользователей по отделу
+      tags:
+      - Users
+  /api/users/update/{userId}:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: da
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.updateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/thttp.ResponseWithDetails-handler_updateUserResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/thttp.ResponseError'
+        "409":
+          description: Already exists
+          schema:
+            $ref: '#/definitions/thttp.ResponseError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/thttp.ResponseError'
+      summary: Изменение данных пользователя
       tags:
       - Users
 swagger: "2.0"

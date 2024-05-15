@@ -215,6 +215,64 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/users/update/{userId}": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Изменение данных пользователя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор пользователя",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "da",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.updateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_updateUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseError"
+                        }
+                    },
+                    "409": {
+                        "description": "Already exists",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -272,105 +330,129 @@ const docTemplate = `{
         },
         "handler.listUsersByCompanyIdElement": {
             "type": "object",
-            "required": [
-                "company_id",
-                "department_name",
-                "department_phone",
-                "id",
-                "name",
-                "passport_name",
-                "passport_number",
-                "phone",
-                "surname"
-            ],
             "properties": {
                 "company_id": {
-                    "type": "integer",
-                    "example": 1
+                    "type": "integer"
                 },
                 "department_name": {
-                    "type": "string",
-                    "example": "First Department"
+                    "type": "string"
                 },
                 "department_phone": {
-                    "type": "string",
-                    "example": "+7(987)1112233"
+                    "type": "string"
                 },
                 "id": {
-                    "type": "integer",
-                    "example": 1
+                    "type": "integer"
                 },
                 "name": {
-                    "type": "string",
-                    "example": "Ivan"
+                    "type": "string"
                 },
                 "passport_name": {
-                    "type": "string",
-                    "example": "Russian passport"
+                    "type": "string"
                 },
                 "passport_number": {
-                    "type": "string",
-                    "example": "1122 112233"
+                    "type": "string"
                 },
                 "phone": {
-                    "type": "string",
-                    "example": "+7(987)6667788"
+                    "type": "string"
                 },
                 "surname": {
-                    "type": "string",
-                    "example": "Ivanov"
+                    "type": "string"
                 }
             }
         },
         "handler.listUsersByDepartmentElement": {
             "type": "object",
+            "properties": {
+                "company_id": {
+                    "type": "integer"
+                },
+                "department_name": {
+                    "type": "string"
+                },
+                "department_phone": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "passport_name": {
+                    "type": "string"
+                },
+                "passport_number": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.updateUserRequest": {
+            "type": "object",
+            "properties": {
+                "company_id": {
+                    "type": "integer"
+                },
+                "department_name": {
+                    "type": "string"
+                },
+                "department_phone": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "passport_name": {
+                    "type": "string"
+                },
+                "passport_number": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.updateUserResponse": {
+            "type": "object",
             "required": [
-                "company_id",
-                "department_name",
-                "department_phone",
-                "id",
-                "name",
-                "passport_name",
-                "passport_number",
-                "phone",
-                "surname"
+                "id"
             ],
             "properties": {
                 "company_id": {
-                    "type": "integer",
-                    "example": 1
+                    "type": "integer"
                 },
                 "department_name": {
-                    "type": "string",
-                    "example": "First Department"
+                    "type": "string"
                 },
                 "department_phone": {
-                    "type": "string",
-                    "example": "+7(987)1112233"
+                    "type": "string"
                 },
                 "id": {
-                    "type": "integer",
-                    "example": 1
+                    "type": "integer"
                 },
                 "name": {
-                    "type": "string",
-                    "example": "Ivan"
+                    "type": "string"
                 },
                 "passport_name": {
-                    "type": "string",
-                    "example": "Russian passport"
+                    "type": "string"
                 },
                 "passport_number": {
-                    "type": "string",
-                    "example": "1122 112233"
+                    "type": "string"
                 },
                 "phone": {
-                    "type": "string",
-                    "example": "+7(987)6667788"
+                    "type": "string"
                 },
                 "surname": {
-                    "type": "string",
-                    "example": "Ivanov"
+                    "type": "string"
                 }
             }
         },
@@ -441,6 +523,23 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/handler.listUsersByDepartmentElement"
                     }
+                }
+            }
+        },
+        "thttp.ResponseWithDetails-handler_updateUserResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "result": {
+                    "$ref": "#/definitions/handler.updateUserResponse"
                 }
             }
         },
