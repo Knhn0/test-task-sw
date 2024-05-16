@@ -5,10 +5,5 @@
       "connectionString": "postgres://test:test@localhost:5466/test",
       "migrationPath": "./migration"
     }
-  },
-  "hash": {
-    "saltSize": 16,
-    "securityIterations": 32,
-    "securityKeyLen": 16
   }
 }

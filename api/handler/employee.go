@@ -11,44 +11,43 @@ import (
 	"test-task-sw/service"
 )
 
-type createUserRequest struct {
+type createEmployeeRequest struct {
 	Id              int    `json:"id" binding:"required" example:"1"`
 	Name            string `json:"name" binding:"required" example:"Ivan"`
 	Surname         string `json:"surname" binding:"required" example:"Ivanov"`
 	Phone           string `json:"phone" binding:"required" example:"+7(987)6667788"`
 	CompanyId       int    `json:"company_id" binding:"required" example:"1"`
-	PassportName    string `json:"passport_name" binding:"required" example:"Russian passport"`
+	PassportType    string `json:"passport_type" binding:"required" example:"Russian passport"`
 	PassportNumber  string `json:"passport_number" binding:"required" example:"1122 112233"`
 	DepartmentName  string `json:"department_name" binding:"required" example:"First Department"`
 	DepartmentPhone string `json:"department_phone" binding:"required" example:"+7(987)1112233"`
 }
 
-// CreateUser godoc
-// @Summary     Созданеие пользователя
-// @Tags		Users
+// CreateEmployee godoc
+// @Summary     Создание работника
+// @Tags		Employee
 // @Accept      json
 // @Produce     json
-// @Param       request body createUserRequest true "Данные пользователя"
+// @Param       request body createEmployeeRequest true "Данные пользователя"
 // @Success     200
-// @Security    ApiKeyAuth
-// @Router      /api/users/create [post]
-func CreateUser(logger *zap.SugaredLogger, userService *service.UserService) gin.HandlerFunc {
+// @Router      /api/employee/create [post]
+func CreateEmployee(logger *zap.SugaredLogger, userService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req createUserRequest
+		var req createEmployeeRequest
 		if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
 			logger.Error(err.Error())
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
-		user := entity.User{
+		user := entity.Employee{
 			Id:        req.Id,
 			Name:      req.Name,
 			Surname:   req.Surname,
 			Phone:     req.Phone,
 			CompanyId: req.CompanyId,
 			Passport: entity.Passport{
-				Name:   req.PassportName,
+				Type:   req.PassportType,
 				Number: req.PassportNumber,
 			},
 			Department: entity.Department{
@@ -73,24 +72,23 @@ func CreateUser(logger *zap.SugaredLogger, userService *service.UserService) gin
 	}
 }
 
-type deleteUserUri struct {
+type deleteEmployeeUri struct {
 	UserId string `uri:"userId"`
 }
 
-// DeleteUser godoc
-// @Summary     Удаление пользователя
-// @Tags		Users
+// DeleteEmployee godoc
+// @Summary     Удаление работника
+// @Tags		Employee
 // @Accept      json
 // @Produce     json
-// @Param       userId path string true "Идентификатор пользователя"
+// @Param       employeeId path string true "Идентификатор работника"
 // @Success     200 {object} thttp.ResponseOk
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
-// @Security    ApiKeyAuth
-// @Router      /api/users/delete/{userId} [delete]
-func DeleteUser(logger *zap.SugaredLogger) gin.HandlerFunc {
+// @Router      /api/employee/delete/{employeeId} [delete]
+func DeleteEmployee(logger *zap.SugaredLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req deleteUserUri
+		var req deleteEmployeeUri
 		if err := c.ShouldBindUri(&req); err != nil {
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
@@ -108,56 +106,55 @@ func DeleteUser(logger *zap.SugaredLogger) gin.HandlerFunc {
 	}
 }
 
-type listUserByCompanyIdUri struct {
+type getListEmployeesByCompanyIdUri struct {
 	CompanyId string `json:"companyId"`
 }
 
-type listUsersByCompanyIdResponse []listUsersByCompanyIdElement
+type getListEmployeesByCompanyIdResponse []getListEmployeesByCompanyIdElement
 
-type listUsersByCompanyIdElement struct {
+type getListEmployeesByCompanyIdElement struct {
 	Id              int    `json:"id"`
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
 	Phone           string `json:"phone"`
 	CompanyId       int    `json:"company_id"`
-	PassportName    string `json:"passport_name"`
+	PassportType    string `json:"passport_type"`
 	PassportNumber  string `json:"passport_number"`
 	DepartmentName  string `json:"department_name"`
 	DepartmentPhone string `json:"department_phone"`
 }
 
-func newListUsersByCompanyIdResponse(users []entity.User) listUsersByCompanyIdResponse {
-	var response = make(listUsersByCompanyIdResponse, 0, len(users))
-	for _, user := range users {
-		response = append(response, listUsersByCompanyIdElement{
-			Id:              user.Id,
-			Name:            user.Name,
-			Surname:         user.Surname,
-			Phone:           user.Phone,
-			CompanyId:       user.CompanyId,
-			PassportName:    user.Passport.Name,
-			PassportNumber:  user.Passport.Number,
-			DepartmentName:  user.Department.Name,
-			DepartmentPhone: user.Department.Phone,
+func newListEmployeesByCompanyIdResponse(employees []entity.Employee) getListEmployeesByCompanyIdResponse {
+	var response = make(getListEmployeesByCompanyIdResponse, 0, len(employees))
+	for _, employee := range employees {
+		response = append(response, getListEmployeesByCompanyIdElement{
+			Id:              employee.Id,
+			Name:            employee.Name,
+			Surname:         employee.Surname,
+			Phone:           employee.Phone,
+			CompanyId:       employee.CompanyId,
+			PassportType:    employee.Passport.Type,
+			PassportNumber:  employee.Passport.Number,
+			DepartmentName:  employee.Department.Name,
+			DepartmentPhone: employee.Department.Phone,
 		})
 	}
 	return response
 }
 
-// ListUsersByCompanyId godoc
-// @Summary     Получение пользователей по id компании
-// @Tags		Users
+// ListEmployeesByCompanyId godoc
+// @Summary     Получение работников по id компании
+// @Tags		Employee
 // @Accept      json
 // @Produce     json
 // @Param       companyId path string true "Идентификатор компании"
-// @Success     200 {object} thttp.ResponseWithDetails[listUsersByCompanyIdResponse]
+// @Success     200 {object} thttp.ResponseWithDetails[getListEmployeesByCompanyIdResponse]
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
-// @Security    ApiKeyAuth
-// @Router      /api/users/list/{companyId} [get]
-func ListUsersByCompanyId(logger *zap.SugaredLogger) gin.HandlerFunc {
+// @Router      /api/employee/list/{companyId} [get]
+func ListEmployeesByCompanyId(logger *zap.SugaredLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req listUserByCompanyIdUri
+		var req getListEmployeesByCompanyIdUri
 		if err := c.ShouldBindUri(&req); err != nil {
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
@@ -181,56 +178,55 @@ func ListUsersByCompanyId(logger *zap.SugaredLogger) gin.HandlerFunc {
 	}
 }
 
-type listUsersByDepartmentUri struct {
+type listEmployeesByDepartmentUri struct {
 	DepName string `uri:"depName"`
 }
 
-type listUsersByDepartmentResponse []listUsersByDepartmentElement
+type listEmployeesByDepartmentResponse []listEmployeesByDepartmentElement
 
-type listUsersByDepartmentElement struct {
+type listEmployeesByDepartmentElement struct {
 	Id              int    `json:"id"`
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
 	Phone           string `json:"phone"`
 	CompanyId       int    `json:"company_id"`
-	PassportName    string `json:"passport_name"`
+	PassportType    string `json:"passport_type"`
 	PassportNumber  string `json:"passport_number"`
 	DepartmentName  string `json:"department_name"`
 	DepartmentPhone string `json:"department_phone"`
 }
 
-func newListUsersByDepartmentResponse(users []entity.User) listUsersByDepartmentResponse {
-	var response = make(listUsersByDepartmentResponse, 0, len(users))
-	for _, user := range users {
-		response = append(response, listUsersByDepartmentElement{
-			Id:              user.Id,
-			Name:            user.Name,
-			Surname:         user.Surname,
-			Phone:           user.Phone,
-			CompanyId:       user.CompanyId,
-			PassportName:    user.Passport.Name,
-			PassportNumber:  user.Passport.Number,
-			DepartmentName:  user.Department.Name,
-			DepartmentPhone: user.Department.Phone,
+func newListEmployeesByDepartmentResponse(employees []entity.Employee) listEmployeesByDepartmentResponse {
+	var response = make(listEmployeesByDepartmentResponse, 0, len(employees))
+	for _, employee := range employees {
+		response = append(response, listEmployeesByDepartmentElement{
+			Id:              employee.Id,
+			Name:            employee.Name,
+			Surname:         employee.Surname,
+			Phone:           employee.Phone,
+			CompanyId:       employee.CompanyId,
+			PassportType:    employee.Passport.Type,
+			PassportNumber:  employee.Passport.Number,
+			DepartmentName:  employee.Department.Name,
+			DepartmentPhone: employee.Department.Phone,
 		})
 	}
 	return response
 }
 
-// ListUsersByDepartment godoc
-// @Summary     Получение пользователей по отделу
-// @Tags		Users
+// ListEmployeesByDepartment godoc
+// @Summary     Получение работников по отделу
+// @Tags		Employees
 // @Accept      json
 // @Produce     json
 // @Param       depName path string true "Название отдела"
-// @Success     200 {object} thttp.ResponseWithDetails[listUsersByDepartmentResponse]
+// @Success     200 {object} thttp.ResponseWithDetails[listEmployeesByDepartmentResponse]
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
-// @Security    ApiKeyAuth
-// @Router      /api/users/list/department/{depName} [get]
-func ListUsersByDepartment(logger *zap.SugaredLogger) gin.HandlerFunc {
+// @Router      /api/employee/list/department/{depName} [get]
+func ListEmployeesByDepartment(logger *zap.SugaredLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req listUsersByDepartmentUri
+		var req listEmployeesByDepartmentUri
 		if err := c.ShouldBindUri(&req); err != nil {
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
@@ -254,68 +250,68 @@ func ListUsersByDepartment(logger *zap.SugaredLogger) gin.HandlerFunc {
 	}
 }
 
-type updateUserUri struct {
-	userId string `uri:"userId"`
+type updateEmployeeUri struct {
+	userId string `uri:"employeeId"`
 }
 
-type updateUserRequest struct {
+type updateEmployeeRequest struct {
 	Name            *string `json:"name"`
 	Surname         *string `json:"surname"`
 	Phone           *string `json:"phone"`
 	CompanyId       *int    `json:"company_id"`
-	PassportName    *string `json:"passport_name"`
+	PassportType    *string `json:"passport_type"`
 	PassportNumber  *string `json:"passport_number"`
 	DepartmentName  *string `json:"department_name"`
 	DepartmentPhone *string `json:"department_phone"`
 }
 
-type updateUserResponse struct {
+type updateEmployeeResponse struct {
 	Id              int    `json:"id" binding:"required"`
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
 	Phone           string `json:"phone"`
 	CompanyId       int    `json:"company_id"`
-	PassportName    string `json:"passport_name"`
+	PassportType    string `json:"passport_type"`
 	PassportNumber  string `json:"passport_number"`
 	DepartmentName  string `json:"department_name"`
 	DepartmentPhone string `json:"department_phone"`
 }
 
-func newUpdateUserResponse(user entity.User) updateUserResponse {
-	return updateUserResponse{
-		Id:              user.Id,
-		Name:            user.Name,
-		Surname:         user.Surname,
-		Phone:           user.Phone,
-		CompanyId:       user.CompanyId,
-		PassportName:    user.Passport.Name,
-		PassportNumber:  user.Passport.Number,
-		DepartmentName:  user.Department.Name,
-		DepartmentPhone: user.Department.Phone,
+func newUpdateEmployeeResponse(employee entity.Employee) updateEmployeeResponse {
+	return updateEmployeeResponse{
+		Id:              employee.Id,
+		Name:            employee.Name,
+		Surname:         employee.Surname,
+		Phone:           employee.Phone,
+		CompanyId:       employee.CompanyId,
+		PassportType:    employee.Passport.Type,
+		PassportNumber:  employee.Passport.Number,
+		DepartmentName:  employee.Department.Name,
+		DepartmentPhone: employee.Department.Phone,
 	}
 }
 
-// UpdateUser godoc
-// @Summary     Изменение данных пользователя
-// @Tags		Users
+// UpdateEmployee godoc
+// @Summary     Изменение данных работника
+// @Tags		Employee
 // @Accept      json
 // @Produce     json
-// @Param       userId path string true "Идентификатор пользователя"
-// @Param 		request body updateUserRequest true "da"
-// @Success     200 {object} thttp.ResponseWithDetails[updateUserResponse]
+// @Param       employeeId path string true "Идентификатор пользователя"
+// @Param 		request body updateEmployeeRequest true "da"
+// @Success     200 {object} thttp.ResponseWithDetails[updateEmployeeResponse]
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     409 {object} thttp.ResponseError "Already exists"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
-// @Router      /api/users/update/{userId} [put]
-func UpdateUser(logger *zap.SugaredLogger) gin.HandlerFunc {
+// @Router      /api/employee/update/{employeeId} [put]
+func UpdateEmployee(logger *zap.SugaredLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req updateUserRequest
+		var req updateEmployeeRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
-		var id updateUserUri
+		var id updateEmployeeUri
 		if err := c.ShouldBindUri(&id); err != nil {
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return

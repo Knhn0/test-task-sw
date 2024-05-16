@@ -15,35 +15,8 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/ping": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Служебные"
-                ],
-                "summary": "Пинг сервиса",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/thttp.ResponseWithDetails-string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/users/create": {
+        "/api/employee/create": {
             "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -51,9 +24,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Employee"
                 ],
-                "summary": "Созданеие пользователя",
+                "summary": "Создание работника",
                 "parameters": [
                     {
                         "description": "Данные пользователя",
@@ -61,7 +34,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.createUserRequest"
+                            "$ref": "#/definitions/handler.createEmployeeRequest"
                         }
                     }
                 ],
@@ -72,13 +45,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/delete/{userId}": {
+        "/api/employee/delete/{employeeId}": {
             "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -86,14 +54,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Employee"
                 ],
-                "summary": "Удаление пользователя",
+                "summary": "Удаление работника",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Идентификатор пользователя",
-                        "name": "userId",
+                        "description": "Идентификатор работника",
+                        "name": "employeeId",
                         "in": "path",
                         "required": true
                     }
@@ -120,13 +88,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/list/department/{depName}": {
+        "/api/employee/list/department/{depName}": {
             "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -134,9 +97,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Employees"
                 ],
-                "summary": "Получение пользователей по отделу",
+                "summary": "Получение работников по отделу",
                 "parameters": [
                     {
                         "type": "string",
@@ -150,7 +113,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_listUsersByDepartmentResponse"
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_listEmployeesByDepartmentResponse"
                         }
                     },
                     "400": {
@@ -168,13 +131,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/list/{companyId}": {
+        "/api/employee/list/{companyId}": {
             "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -182,9 +140,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Employee"
                 ],
-                "summary": "Получение пользователей по id компании",
+                "summary": "Получение работников по id компании",
                 "parameters": [
                     {
                         "type": "string",
@@ -198,7 +156,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_listUsersByCompanyIdResponse"
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_getListEmployeesByCompanyIdResponse"
                         }
                     },
                     "400": {
@@ -216,7 +174,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/users/update/{userId}": {
+        "/api/employee/update/{employeeId}": {
             "put": {
                 "consumes": [
                     "application/json"
@@ -225,14 +183,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "Employee"
                 ],
-                "summary": "Изменение данных пользователя",
+                "summary": "Изменение данных работника",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Идентификатор пользователя",
-                        "name": "userId",
+                        "name": "employeeId",
                         "in": "path",
                         "required": true
                     },
@@ -242,7 +200,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.updateUserRequest"
+                            "$ref": "#/definitions/handler.updateEmployeeRequest"
                         }
                     }
                 ],
@@ -250,7 +208,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_updateUserResponse"
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_updateEmployeeResponse"
                         }
                     },
                     "400": {
@@ -273,10 +231,32 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/ping": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Служебные"
+                ],
+                "summary": "Пинг сервиса",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "handler.createUserRequest": {
+        "handler.createEmployeeRequest": {
             "type": "object",
             "required": [
                 "company_id",
@@ -284,8 +264,8 @@ const docTemplate = `{
                 "department_phone",
                 "id",
                 "name",
-                "passport_name",
                 "passport_number",
+                "passport_type",
                 "phone",
                 "surname"
             ],
@@ -310,13 +290,13 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Ivan"
                 },
-                "passport_name": {
-                    "type": "string",
-                    "example": "Russian passport"
-                },
                 "passport_number": {
                     "type": "string",
                     "example": "1122 112233"
+                },
+                "passport_type": {
+                    "type": "string",
+                    "example": "Russian passport"
                 },
                 "phone": {
                     "type": "string",
@@ -328,7 +308,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.listUsersByCompanyIdElement": {
+        "handler.getListEmployeesByCompanyIdElement": {
             "type": "object",
             "properties": {
                 "company_id": {
@@ -346,10 +326,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "passport_name": {
+                "passport_number": {
                     "type": "string"
                 },
-                "passport_number": {
+                "passport_type": {
                     "type": "string"
                 },
                 "phone": {
@@ -360,7 +340,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.listUsersByDepartmentElement": {
+        "handler.listEmployeesByDepartmentElement": {
             "type": "object",
             "properties": {
                 "company_id": {
@@ -378,10 +358,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "passport_name": {
+                "passport_number": {
                     "type": "string"
                 },
-                "passport_number": {
+                "passport_type": {
                     "type": "string"
                 },
                 "phone": {
@@ -392,7 +372,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.updateUserRequest": {
+        "handler.updateEmployeeRequest": {
             "type": "object",
             "properties": {
                 "company_id": {
@@ -407,10 +387,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "passport_name": {
+                "passport_number": {
                     "type": "string"
                 },
-                "passport_number": {
+                "passport_type": {
                     "type": "string"
                 },
                 "phone": {
@@ -421,7 +401,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.updateUserResponse": {
+        "handler.updateEmployeeResponse": {
             "type": "object",
             "required": [
                 "id"
@@ -442,10 +422,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "passport_name": {
+                "passport_number": {
                     "type": "string"
                 },
-                "passport_number": {
+                "passport_type": {
                     "type": "string"
                 },
                 "phone": {
@@ -486,7 +466,7 @@ const docTemplate = `{
                 "result": {}
             }
         },
-        "thttp.ResponseWithDetails-handler_listUsersByCompanyIdResponse": {
+        "thttp.ResponseWithDetails-handler_getListEmployeesByCompanyIdResponse": {
             "type": "object",
             "properties": {
                 "description": {
@@ -501,12 +481,12 @@ const docTemplate = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/handler.listUsersByCompanyIdElement"
+                        "$ref": "#/definitions/handler.getListEmployeesByCompanyIdElement"
                     }
                 }
             }
         },
-        "thttp.ResponseWithDetails-handler_listUsersByDepartmentResponse": {
+        "thttp.ResponseWithDetails-handler_listEmployeesByDepartmentResponse": {
             "type": "object",
             "properties": {
                 "description": {
@@ -521,12 +501,12 @@ const docTemplate = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/handler.listUsersByDepartmentElement"
+                        "$ref": "#/definitions/handler.listEmployeesByDepartmentElement"
                     }
                 }
             }
         },
-        "thttp.ResponseWithDetails-handler_updateUserResponse": {
+        "thttp.ResponseWithDetails-handler_updateEmployeeResponse": {
             "type": "object",
             "properties": {
                 "description": {
@@ -539,7 +519,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "result": {
-                    "$ref": "#/definitions/handler.updateUserResponse"
+                    "$ref": "#/definitions/handler.updateEmployeeResponse"
                 }
             }
         },

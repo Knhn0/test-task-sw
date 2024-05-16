@@ -1,5 +1,5 @@
 definitions:
-  handler.createUserRequest:
+  handler.createEmployeeRequest:
     properties:
       company_id:
         example: 1
@@ -16,11 +16,11 @@ definitions:
       name:
         example: Ivan
         type: string
-      passport_name:
-        example: Russian passport
-        type: string
       passport_number:
         example: 1122 112233
+        type: string
+      passport_type:
+        example: Russian passport
         type: string
       phone:
         example: +7(987)6667788
@@ -34,12 +34,12 @@ definitions:
     - department_phone
     - id
     - name
-    - passport_name
     - passport_number
+    - passport_type
     - phone
     - surname
     type: object
-  handler.listUsersByCompanyIdElement:
+  handler.getListEmployeesByCompanyIdElement:
     properties:
       company_id:
         type: integer
@@ -51,16 +51,16 @@ definitions:
         type: integer
       name:
         type: string
-      passport_name:
-        type: string
       passport_number:
+        type: string
+      passport_type:
         type: string
       phone:
         type: string
       surname:
         type: string
     type: object
-  handler.listUsersByDepartmentElement:
+  handler.listEmployeesByDepartmentElement:
     properties:
       company_id:
         type: integer
@@ -72,16 +72,16 @@ definitions:
         type: integer
       name:
         type: string
-      passport_name:
-        type: string
       passport_number:
+        type: string
+      passport_type:
         type: string
       phone:
         type: string
       surname:
         type: string
     type: object
-  handler.updateUserRequest:
+  handler.updateEmployeeRequest:
     properties:
       company_id:
         type: integer
@@ -91,16 +91,16 @@ definitions:
         type: string
       name:
         type: string
-      passport_name:
-        type: string
       passport_number:
+        type: string
+      passport_type:
         type: string
       phone:
         type: string
       surname:
         type: string
     type: object
-  handler.updateUserResponse:
+  handler.updateEmployeeResponse:
     properties:
       company_id:
         type: integer
@@ -112,9 +112,9 @@ definitions:
         type: integer
       name:
         type: string
-      passport_name:
-        type: string
       passport_number:
+        type: string
+      passport_type:
         type: string
       phone:
         type: string
@@ -143,7 +143,7 @@ definitions:
         type: boolean
       result: {}
     type: object
-  thttp.ResponseWithDetails-handler_listUsersByCompanyIdResponse:
+  thttp.ResponseWithDetails-handler_getListEmployeesByCompanyIdResponse:
     properties:
       description:
         type: string
@@ -153,10 +153,10 @@ definitions:
         type: boolean
       result:
         items:
-          $ref: '#/definitions/handler.listUsersByCompanyIdElement'
+          $ref: '#/definitions/handler.getListEmployeesByCompanyIdElement'
         type: array
     type: object
-  thttp.ResponseWithDetails-handler_listUsersByDepartmentResponse:
+  thttp.ResponseWithDetails-handler_listEmployeesByDepartmentResponse:
     properties:
       description:
         type: string
@@ -166,10 +166,10 @@ definitions:
         type: boolean
       result:
         items:
-          $ref: '#/definitions/handler.listUsersByDepartmentElement'
+          $ref: '#/definitions/handler.listEmployeesByDepartmentElement'
         type: array
     type: object
-  thttp.ResponseWithDetails-handler_updateUserResponse:
+  thttp.ResponseWithDetails-handler_updateEmployeeResponse:
     properties:
       description:
         type: string
@@ -178,7 +178,7 @@ definitions:
       ok:
         type: boolean
       result:
-        $ref: '#/definitions/handler.updateUserResponse'
+        $ref: '#/definitions/handler.updateEmployeeResponse'
     type: object
   thttp.ResponseWithDetails-string:
     properties:
@@ -197,21 +197,7 @@ info:
   title: Test task Swartway
   version: "1.0"
 paths:
-  /api/ping:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/thttp.ResponseWithDetails-string'
-      summary: Пинг сервиса
-      tags:
-      - Служебные
-  /api/users/create:
+  /api/employee/create:
     post:
       consumes:
       - application/json
@@ -221,25 +207,23 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handler.createUserRequest'
+          $ref: '#/definitions/handler.createEmployeeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
-      security:
-      - ApiKeyAuth: []
-      summary: Созданеие пользователя
+      summary: Создание работника
       tags:
-      - Users
-  /api/users/delete/{userId}:
+      - Employee
+  /api/employee/delete/{employeeId}:
     delete:
       consumes:
       - application/json
       parameters:
-      - description: Идентификатор пользователя
+      - description: Идентификатор работника
         in: path
-        name: userId
+        name: employeeId
         required: true
         type: string
       produces:
@@ -257,12 +241,10 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/thttp.ResponseError'
-      security:
-      - ApiKeyAuth: []
-      summary: Удаление пользователя
+      summary: Удаление работника
       tags:
-      - Users
-  /api/users/list/{companyId}:
+      - Employee
+  /api/employee/list/{companyId}:
     get:
       consumes:
       - application/json
@@ -278,7 +260,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/thttp.ResponseWithDetails-handler_listUsersByCompanyIdResponse'
+            $ref: '#/definitions/thttp.ResponseWithDetails-handler_getListEmployeesByCompanyIdResponse'
         "400":
           description: Bad request
           schema:
@@ -287,12 +269,10 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/thttp.ResponseError'
-      security:
-      - ApiKeyAuth: []
-      summary: Получение пользователей по id компании
+      summary: Получение работников по id компании
       tags:
-      - Users
-  /api/users/list/department/{depName}:
+      - Employee
+  /api/employee/list/department/{depName}:
     get:
       consumes:
       - application/json
@@ -308,7 +288,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/thttp.ResponseWithDetails-handler_listUsersByDepartmentResponse'
+            $ref: '#/definitions/thttp.ResponseWithDetails-handler_listEmployeesByDepartmentResponse'
         "400":
           description: Bad request
           schema:
@@ -317,19 +297,17 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/thttp.ResponseError'
-      security:
-      - ApiKeyAuth: []
-      summary: Получение пользователей по отделу
+      summary: Получение работников по отделу
       tags:
-      - Users
-  /api/users/update/{userId}:
+      - Employees
+  /api/employee/update/{employeeId}:
     put:
       consumes:
       - application/json
       parameters:
       - description: Идентификатор пользователя
         in: path
-        name: userId
+        name: employeeId
         required: true
         type: string
       - description: da
@@ -337,14 +315,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handler.updateUserRequest'
+          $ref: '#/definitions/handler.updateEmployeeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/thttp.ResponseWithDetails-handler_updateUserResponse'
+            $ref: '#/definitions/thttp.ResponseWithDetails-handler_updateEmployeeResponse'
         "400":
           description: Bad request
           schema:
@@ -357,7 +335,21 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/thttp.ResponseError'
-      summary: Изменение данных пользователя
+      summary: Изменение данных работника
       tags:
-      - Users
+      - Employee
+  /api/ping:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/thttp.ResponseWithDetails-string'
+      summary: Пинг сервиса
+      tags:
+      - Служебные
 swagger: "2.0"

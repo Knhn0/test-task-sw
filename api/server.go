@@ -31,7 +31,9 @@ func NewServer(
 	port int,
 	logger *zap.SugaredLogger,
 	contextProvider tctx.DefaultContextProviderFunc,
-	userService *service.UserService,
+	employeeService *service.EmployeeService,
+	passportService *service.PassportService,
+	departmentService *service.DepartmentService,
 ) *Server {
 	r := gin.New()
 
@@ -48,13 +50,13 @@ func NewServer(
 			serviceGroup.GET("/ping", handler.Ping())
 		}
 
-		userGroup := apiGroup.Group("/users")
+		employeeGroup := apiGroup.Group("/employee")
 		{
-			userGroup.POST("create", handler.CreateUser(logger, userService))
-			userGroup.DELETE("delete/:userId", handler.DeleteUser(logger))
-			userGroup.GET("list/:companyId", handler.ListUsersByCompanyId(logger))
-			userGroup.GET("list/department/:depName", handler.ListUsersByDepartment(logger))
-			userGroup.PUT("update/:userId", handler.UpdateUser(logger))
+			employeeGroup.POST("create", handler.CreateEmployee(logger, employeeService))
+			employeeGroup.DELETE("delete/:employeeId", handler.DeleteEmployee(logger))
+			employeeGroup.GET("list/:companyId", handler.ListEmployeesByCompanyId(logger))
+			employeeGroup.GET("list/department/:depName", handler.ListEmployeesByDepartment(logger))
+			employeeGroup.PUT("update/:employeeId", handler.UpdateEmployee(logger))
 		}
 	}
 	return &Server{

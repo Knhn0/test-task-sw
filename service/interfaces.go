@@ -5,7 +5,14 @@ import (
 	"test-task-sw/entity"
 )
 
-type userRepo interface {
-	GetUser(ctx context.Context, userId int) (entity.User, error)
-	Create(ctx context.Context, user entity.User, passportHash string) (int, error)
+type employeeRepo interface {
+	GetEmployee(ctx context.Context, employeeId int) (entity.Employee, error)
+	Create(ctx context.Context, employee entity.Employee) (int64, error)
+}
+
+type passportRepo interface {
+	Create(ctx context.Context, passport entity.Passport) (int64, error)
+}
+
+type departmentRepo interface {
 }

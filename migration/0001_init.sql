@@ -5,30 +5,32 @@ create extension if not exists "pg_trgm";
 create extension if not exists "uuid-ossp";
 
 -- Users
-create table if not exists "users"
-(
-    id  int primary key,
-    user_name varchar(255),
-    surname varchar(255),
-    phone varchar(255),
-    company_id int,
-    passport_id uuid unique default uuid_generate_v4(),
-    department_id uuid unique default uuid_generate_v4()
-    );
 
 create table if not exists "passports"
 (
-    id uuid unique default uuid_generate_v4(),
-    passport_name varchar(255),
-    passport_number_hash varchar(255)
+    id serial primary key NOT NULL,
+    passport_type varchar(255) not null,
+    passport_number_hash varchar(255) not null
 );
 
 create table if not exists "departments"
 (
-    id uuid unique default uuid_generate_v4()
-    department_name varchar(255),
-    deaprtment_phone varchar(255)
+    id serial primary key NOT NULL,
+    department_name varchar(255) not null,
+    department_phone varchar(255) not null
 );
+
+create table if not exists "users"
+(
+    id serial primary key NOT NULL,
+    user_name varchar(255) not null,
+    surname varchar(255) not null,
+    phone varchar(255) not null,
+    company_id int not null,
+    passport_id int not null references passports(id),
+    department_id int not null references departments(id)
+);
+
 
 -- +goose Down
 drop extension if exists "pg_trgm";

@@ -25,10 +25,14 @@ type App struct {
 	pgDb *tpostgres.Postgres
 
 	//repos
-	userRepo *repository.UserRepository
+	employeeRepo   *repository.EmployeeRepository
+	passportRepo   *repository.PassportRepository
+	departmentRepo *repository.DepartmentRepository
 
 	//services
-	userService *service.UserService
+	employeeService   *service.EmployeeService
+	passportService   *service.PassportService
+	departmentService *service.DepartmentService
 }
 
 func NewApp(logger *zap.SugaredLogger, cfg config.Config, contextProvider tctx.DefaultContextProviderFunc) (*App, error) {
@@ -43,7 +47,7 @@ func NewApp(logger *zap.SugaredLogger, cfg config.Config, contextProvider tctx.D
 		return app, err
 	}
 
-	if err := app.initServices(cfg); err != nil {
+	if err := app.initServices(); err != nil {
 		return app, err
 	}
 
@@ -63,24 +67,26 @@ func (a *App) initDatabases() error {
 	}
 
 	// Repos
-	a.userRepo = repository.NewUserRepository(a.pgDb)
+	a.employeeRepo = repository.NewUserRepository(a.pgDb)
+	a.passportRepo = repository.NewPassportRepository(a.pgDb)
+	a.departmentRepo = repository.NewDepartmentRepository(a.pgDb)
+
 	return nil
 }
 
-func (a *App) initServices(cfg config.Config) error {
-	var dataHasher = service.NewDataHasher(
-		cfg.Hash.SecurityIterations,
-		cfg.Hash.SecurityKeyLen,
-		cfg.Hash.SaltSize,
-	)
+func (a *App) initServices() error {
 
-	a.userService = service.NewUserService(a.userRepo, dataHasher)
+	a.passportService = service.NewPassportService(a.passportRepo)
+	a.departmentService = service.NewDepartmentService(a.departmentRepo)
+	a.employeeService = service.NewUserService(a.employeeRepo, a.departmentService, a.passportService)
 
 	a.Server = api.NewServer(
 		a.config.Port,
 		a.logger,
 		a.contextProvider,
-		a.userService,
+		a.employeeService,
+		a.passportService,
+		a.departmentService,
 	)
 
 	return nil
