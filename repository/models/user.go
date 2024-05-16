@@ -13,4 +13,13 @@ type User struct {
 }
 
 type Passport struct {
+	Id     uuid.UUID `db:"id"`
+	Name   string    `db:"passport_name"`
+	Number string    `db:"passport_number"`
+}
+
+type Description struct {
+	Id    uuid.UUID `db:"id"`
+	Name  string    `db:"department_name"`
+	Phone string    `db:"department_phone"`
 }
