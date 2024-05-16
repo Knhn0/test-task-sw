@@ -32,7 +32,7 @@ type createUserRequest struct {
 // @Success     200
 // @Security    ApiKeyAuth
 // @Router      /api/users/create [post]
-func CreateUser(logger *zap.SugaredLogger) gin.HandlerFunc {
+func CreateUser(logger *zap.SugaredLogger, userService *service.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req createUserRequest
 		if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
@@ -41,7 +41,23 @@ func CreateUser(logger *zap.SugaredLogger) gin.HandlerFunc {
 			return
 		}
 
-		var err error
+		user := entity.User{
+			Id:        req.Id,
+			Name:      req.Name,
+			Surname:   req.Surname,
+			Phone:     req.Phone,
+			CompanyId: req.CompanyId,
+			Passport: entity.Passport{
+				Name:   req.PassportName,
+				Number: req.PassportNumber,
+			},
+			Department: entity.Department{
+				Name:  req.DepartmentName,
+				Phone: req.DepartmentPhone,
+			},
+		}
+
+		id, err := userService.Create(c, user)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrAlreadyExists):
@@ -52,7 +68,7 @@ func CreateUser(logger *zap.SugaredLogger) gin.HandlerFunc {
 			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 			return
 		}
-		thttp.OkResponseWithResult(c, 1)
+		thttp.OkResponseWithResult(c, id)
 		return
 	}
 }

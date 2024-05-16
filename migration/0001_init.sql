@@ -7,7 +7,7 @@ create extension if not exists "uuid-ossp";
 -- Users
 create table if not exists "users"
 (
-    id  uuid primary key default uuid_generate_v4(),
+    id  int primary key,
     login   varchar unique not null,
     password_hash    varchar(64) not null,
     role_id int

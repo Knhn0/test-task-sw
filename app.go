@@ -10,6 +10,8 @@ import (
 	"test-task-sw/config"
 	"test-task-sw/lib/tctx"
 	"test-task-sw/lib/tpostgres"
+	"test-task-sw/repository"
+	"test-task-sw/service"
 )
 
 type App struct {
@@ -21,6 +23,12 @@ type App struct {
 
 	//db
 	pgDb *tpostgres.Postgres
+
+	//repos
+	userRepo *repository.UserRepository
+
+	//services
+	userService *service.UserService
 }
 
 func NewApp(logger *zap.SugaredLogger, cfg config.Config, contextProvider tctx.DefaultContextProviderFunc) (*App, error) {
@@ -35,7 +43,7 @@ func NewApp(logger *zap.SugaredLogger, cfg config.Config, contextProvider tctx.D
 		return app, err
 	}
 
-	if err := app.initServices(); err != nil {
+	if err := app.initServices(cfg); err != nil {
 		return app, err
 	}
 
@@ -55,16 +63,24 @@ func (a *App) initDatabases() error {
 	}
 
 	// Repos
-
+	a.userRepo = repository.NewUserRepository(a.pgDb)
 	return nil
 }
 
-func (a *App) initServices() error {
+func (a *App) initServices(cfg config.Config) error {
+	var dataHasher = service.NewDataHasher(
+		cfg.Hash.SecurityIterations,
+		cfg.Hash.SecurityKeyLen,
+		cfg.Hash.SaltSize,
+	)
+
+	a.userService = service.NewUserService(a.userRepo, dataHasher)
 
 	a.Server = api.NewServer(
 		a.config.Port,
 		a.logger,
 		a.contextProvider,
+		a.userService,
 	)
 
 	return nil
