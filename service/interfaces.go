@@ -7,7 +7,7 @@ import (
 
 type employeeRepo interface {
 	GetEmployee(ctx context.Context, employeeId int) (entity.Employee, error)
-	Create(ctx context.Context, employee entity.Employee) (int64, error)
+	Create(ctx context.Context, employee entity.Employee, passId int64, depId int64) (int64, error)
 }
 
 type passportRepo interface {
@@ -15,4 +15,5 @@ type passportRepo interface {
 }
 
 type departmentRepo interface {
+	Create(ctx context.Context, department entity.Department) (int64, error)
 }

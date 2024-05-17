@@ -21,8 +21,8 @@ func NewUserService(repo employeeRepo, depServ *DepartmentService, passServ *Pas
 	}
 }
 
-func (u *EmployeeService) Create(ctx context.Context, employee entity.Employee) (int64, error) {
-	//isUserExists, err := u.isUserExists(ctx, employee.Id)
+func (e *EmployeeService) Create(ctx context.Context, employee entity.Employee) (int64, error) {
+	//isUserExists, err := e.isUserExists(ctx, employee.Id)
 	//if err != nil {
 	//	return 0, err
 	//}
@@ -36,26 +36,37 @@ func (u *EmployeeService) Create(ctx context.Context, employee entity.Employee) 
 		Type:   employee.Passport.Type,
 		Number: employee.Passport.Number,
 	}
-	passId, err := u.passportService.CreatePassport(ctx, passport)
+	passId, err := e.passportService.CreatePassport(ctx, passport)
 	switch {
 	case err == nil:
 	default:
 		return 0, err
 	}
 
-	//userId, err := u.employeeRepo.Create(ctx, employee)
+	department := entity.Department{
+		Name:  employee.Department.Name,
+		Phone: employee.Department.Phone,
+	}
+	depId, err := e.departmentService.CreateDepartment(ctx, department)
 	switch {
 	case err == nil:
 	default:
 		return 0, err
 	}
 
-	return passId, nil
+	employeeId, err := e.employeeRepo.Create(ctx, employee, passId, depId)
+	switch {
+	case err == nil:
+	default:
+		return 0, err
+	}
+
+	return employeeId, nil
 }
 
-func (u *EmployeeService) isUserExists(ctx context.Context, userId int) (bool, error) {
+func (e *EmployeeService) isUserExists(ctx context.Context, userId int) (bool, error) {
 
-	_, err := u.employeeRepo.GetEmployee(ctx, userId)
+	_, err := e.employeeRepo.GetEmployee(ctx, userId)
 
 	switch {
 	case err == nil:

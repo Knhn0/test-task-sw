@@ -40,7 +40,7 @@ func CreateEmployee(logger *zap.SugaredLogger, userService *service.EmployeeServ
 			return
 		}
 
-		user := entity.Employee{
+		employee := entity.Employee{
 			Id:        req.Id,
 			Name:      req.Name,
 			Surname:   req.Surname,
@@ -56,7 +56,7 @@ func CreateEmployee(logger *zap.SugaredLogger, userService *service.EmployeeServ
 			},
 		}
 
-		id, err := userService.Create(c, user)
+		id, err := userService.Create(c, employee)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrAlreadyExists):
