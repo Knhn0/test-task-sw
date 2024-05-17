@@ -65,3 +65,11 @@ func (e *EmployeeRepository) GetListByCompanyId(ctx context.Context, companyId i
 	}
 	return mapper.EmployeesSlice(employeeModel), nil
 }
+
+func (e *EmployeeRepository) GetListByDepartmentName(ctx context.Context, depName string) ([]entity.Employee, error) {
+	var employeeModel []models.EmployeeForList
+	if err := e.db.SelectContext(ctx, &employeeModel, query.GetListEmployeesByDepName, depName); err != nil {
+		return nil, err
+	}
+	return mapper.EmployeesSlice(employeeModel), nil
+}

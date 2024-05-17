@@ -103,6 +103,10 @@ func DeleteEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 		err = employeeService.DeleteEmployee(c, int64(id))
 		switch {
 		case err == nil:
+		case errors.Is(err, service.ErrNotFound):
+			logger.Error(err.Error())
+			thttp.ErrorResponse(c, http.StatusNotFound, service.ErrNotFound.Error())
+			return
 		default:
 			logger.Error(err.Error())
 			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
@@ -231,7 +235,7 @@ func newListEmployeesByDepartmentResponse(employees []entity.Employee) listEmplo
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
 // @Router      /api/employee/list/department/{depName} [get]
-func ListEmployeesByDepartment(logger *zap.SugaredLogger) gin.HandlerFunc {
+func ListEmployeesByDepartment(logger *zap.SugaredLogger, employeeService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req listEmployeesByDepartmentUri
 		if err := c.ShouldBindUri(&req); err != nil {
@@ -239,7 +243,8 @@ func ListEmployeesByDepartment(logger *zap.SugaredLogger) gin.HandlerFunc {
 			return
 		}
 
-		var err error
+		employees, err := employeeService.GetEmployeeListByDepartmentName(c, req.DepName)
+
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
@@ -252,7 +257,7 @@ func ListEmployeesByDepartment(logger *zap.SugaredLogger) gin.HandlerFunc {
 			return
 		}
 
-		response := 1
+		response := newListEmployeesByDepartmentResponse(employees)
 		thttp.OkResponseWithResult(c, response)
 	}
 }
@@ -262,14 +267,14 @@ type updateEmployeeUri struct {
 }
 
 type updateEmployeeRequest struct {
-	Name            *string `json:"name"`
-	Surname         *string `json:"surname"`
-	Phone           *string `json:"phone"`
-	CompanyId       *int    `json:"company_id"`
-	PassportType    *string `json:"passport_type"`
-	PassportNumber  *string `json:"passport_number"`
-	DepartmentName  *string `json:"department_name"`
-	DepartmentPhone *string `json:"department_phone"`
+	Name            *string `json:"name,omitempty"`
+	Surname         *string `json:"surname,omitempty"`
+	Phone           *string `json:"phone,omitempty"`
+	CompanyId       *int    `json:"company_id,omitempty"`
+	PassportType    *string `json:"passport_type,omitempty"`
+	PassportNumber  *string `json:"passport_number,omitempty"`
+	DepartmentName  *string `json:"department_name,omitempty"`
+	DepartmentPhone *string `json:"department_phone,omitempty"`
 }
 
 type updateEmployeeResponse struct {

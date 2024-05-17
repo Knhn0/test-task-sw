@@ -80,7 +80,17 @@ func (e *EmployeeService) GetEmployee(ctx context.Context, employeeId int64) (en
 }
 
 func (e *EmployeeService) DeleteEmployee(ctx context.Context, employeeId int64) error {
-	err := e.employeeRepo.Delete(ctx, employeeId)
+	isEmployeeExists, err := e.isEmployeeExists(ctx, employeeId)
+	if err != nil {
+		return err
+	}
+
+	if !isEmployeeExists {
+		err = ErrNotFound
+		return err
+	}
+
+	err = e.employeeRepo.Delete(ctx, employeeId)
 	switch {
 	case err == nil:
 	case errors.Is(err, sql.ErrNoRows):
@@ -94,6 +104,21 @@ func (e *EmployeeService) DeleteEmployee(ctx context.Context, employeeId int64) 
 func (e *EmployeeService) GetEmployeeListByCompanyId(ctx context.Context, companyId int) ([]entity.Employee, error) {
 	// нужно добавить ifExists
 	employees, err := e.employeeRepo.GetListByCompanyId(ctx, companyId)
+	switch {
+	case err == nil:
+	case errors.Is(err, sql.ErrNoRows):
+		return []entity.Employee{}, ErrNotFound
+	default:
+		return []entity.Employee{}, err
+	}
+	return employees, nil
+}
+
+func (e *EmployeeService) GetEmployeeListByDepartmentName(ctx context.Context, departmentName string) ([]entity.Employee, error) {
+	employees, err := e.employeeRepo.GetListByDepartmentName(ctx, departmentName)
+	if len(employees) == 0 {
+		return []entity.Employee{}, ErrNotFound
+	}
 	switch {
 	case err == nil:
 	case errors.Is(err, sql.ErrNoRows):

@@ -10,6 +10,7 @@ type employeeRepo interface {
 	Create(ctx context.Context, employee entity.Employee, passId int64, depId int64) (int64, error)
 	Delete(ctx context.Context, employeeId int64) error
 	GetListByCompanyId(ctx context.Context, companyId int) ([]entity.Employee, error)
+	GetListByDepartmentName(ctx context.Context, depName string) ([]entity.Employee, error)
 }
 
 type passportRepo interface {

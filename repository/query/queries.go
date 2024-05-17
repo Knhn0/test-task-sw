@@ -25,3 +25,6 @@ var GetEmployee string
 
 //go:embed get_list_by_company_id.sql
 var GetListByCompanyId string
+
+//go:embed get_list_employees_by_dep_name.sql
+var GetListEmployeesByDepName string
