@@ -53,7 +53,7 @@ func NewServer(
 		employeeGroup := apiGroup.Group("/employee")
 		{
 			employeeGroup.POST("create", handler.CreateEmployee(logger, employeeService))
-			employeeGroup.DELETE("delete/:employeeId", handler.DeleteEmployee(logger))
+			employeeGroup.DELETE("delete/:employeeId", handler.DeleteEmployee(logger, employeeService))
 			employeeGroup.GET("list/:companyId", handler.ListEmployeesByCompanyId(logger))
 			employeeGroup.GET("list/department/:depName", handler.ListEmployeesByDepartment(logger))
 			employeeGroup.PUT("update/:employeeId", handler.UpdateEmployee(logger))

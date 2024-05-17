@@ -23,13 +23,19 @@ func (p *PassportRepository) Create(ctx context.Context, passport entity.Passpor
 		passport.Number,
 	}
 
-	_, err := p.db.ExecContext(ctx, query.InsertPassportData, passportData...)
+	var passId int64
+	err := p.db.GetContext(ctx, &passId, query.InsertPassportData, passportData...)
 	if err != nil {
 		return 0, err
 	}
 
-	var passId int64
-	err = p.db.GetContext(ctx, &passId, query.InsertPassportData, passportData...)
-
 	return passId, nil
+}
+
+func (p *PassportRepository) Delete(ctx context.Context, passportId int64) error {
+	_, err := p.db.ExecContext(ctx, query.DeletePassport, passportId)
+	if err != nil {
+		return err
+	}
+	return nil
 }

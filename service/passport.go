@@ -25,3 +25,13 @@ func (p *PassportService) CreatePassport(ctx context.Context, passport entity.Pa
 
 	return passId, nil
 }
+
+func (p *PassportService) DeletePassport(ctx context.Context, passportId int64) error {
+	err := p.passportRepo.Delete(ctx, passportId)
+	switch {
+	case err == nil:
+	default:
+		return err
+	}
+	return nil
+}

@@ -25,3 +25,13 @@ func (d *DepartmentService) CreateDepartment(ctx context.Context, department ent
 
 	return depId, nil
 }
+
+func (d *DepartmentService) DeleteDepartment(ctx context.Context, departmentId int64) error {
+	err := d.departmentRepo.Delete(ctx, departmentId)
+	switch {
+	case err == nil:
+	default:
+		return err
+	}
+	return nil
+}

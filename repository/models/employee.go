@@ -2,7 +2,7 @@ package models
 
 type Employee struct {
 	Id           int    `db:"id"`
-	Name         string `db:"user_name"`
+	Name         string `db:"employee_name"`
 	Surname      string `db:"surname"`
 	Phone        string `db:"phone"`
 	CompanyId    int    `db:"company_id"`

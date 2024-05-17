@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
+	"strconv"
 	"test-task-sw/entity"
 	"test-task-sw/lib/thttp"
 	"test-task-sw/service"
@@ -31,7 +32,7 @@ type createEmployeeRequest struct {
 // @Param       request body createEmployeeRequest true "Данные пользователя"
 // @Success     200
 // @Router      /api/employee/create [post]
-func CreateEmployee(logger *zap.SugaredLogger, userService *service.EmployeeService) gin.HandlerFunc {
+func CreateEmployee(logger *zap.SugaredLogger, employeeService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req createEmployeeRequest
 		if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
@@ -56,7 +57,7 @@ func CreateEmployee(logger *zap.SugaredLogger, userService *service.EmployeeServ
 			},
 		}
 
-		id, err := userService.Create(c, employee)
+		id, err := employeeService.Create(c, employee)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrAlreadyExists):
@@ -73,7 +74,7 @@ func CreateEmployee(logger *zap.SugaredLogger, userService *service.EmployeeServ
 }
 
 type deleteEmployeeUri struct {
-	UserId string `uri:"userId"`
+	EmployeeId string `uri:"employeeId"`
 }
 
 // DeleteEmployee godoc
@@ -86,7 +87,7 @@ type deleteEmployeeUri struct {
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
 // @Router      /api/employee/delete/{employeeId} [delete]
-func DeleteEmployee(logger *zap.SugaredLogger) gin.HandlerFunc {
+func DeleteEmployee(logger *zap.SugaredLogger, employeeService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req deleteEmployeeUri
 		if err := c.ShouldBindUri(&req); err != nil {
@@ -94,8 +95,12 @@ func DeleteEmployee(logger *zap.SugaredLogger) gin.HandlerFunc {
 			return
 		}
 
-		//err := profileService.Delete(c, uuid.MustParse(req.UserId))
-		var err error
+		id, err := strconv.Atoi(req.EmployeeId)
+		if err != nil {
+			return
+		}
+
+		err = employeeService.DeleteEmployee(c, int64(id))
 		switch {
 		case err == nil:
 		default:

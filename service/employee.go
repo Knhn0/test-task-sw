@@ -22,12 +22,12 @@ func NewUserService(repo employeeRepo, depServ *DepartmentService, passServ *Pas
 }
 
 func (e *EmployeeService) Create(ctx context.Context, employee entity.Employee) (int64, error) {
-	//isUserExists, err := e.isUserExists(ctx, employee.Id)
+	//isEmployeeExists, err := e.isEmployeeExists(ctx, int64(employee.Id))
 	//if err != nil {
 	//	return 0, err
 	//}
 	//
-	//if isUserExists {
+	//if isEmployeeExists {
 	//	err = ErrAlreadyExists
 	//	return 0, err
 	//}
@@ -58,15 +58,40 @@ func (e *EmployeeService) Create(ctx context.Context, employee entity.Employee) 
 	switch {
 	case err == nil:
 	default:
+		e.passportService.DeletePassport(ctx, passId)
 		return 0, err
 	}
 
 	return employeeId, nil
 }
 
-func (e *EmployeeService) isUserExists(ctx context.Context, userId int) (bool, error) {
+func (e *EmployeeService) GetEmployee(ctx context.Context, employeeId int64) (entity.EmployeeTransfer, error) {
+	employee, err := e.employeeRepo.GetEmployee(ctx, employeeId)
+	switch {
+	case err == nil:
+	case errors.Is(err, sql.ErrNoRows):
+		return entity.EmployeeTransfer{}, ErrNotFound
+	default:
+		return entity.EmployeeTransfer{}, err
+	}
+	return employee, nil
+}
 
-	_, err := e.employeeRepo.GetEmployee(ctx, userId)
+func (e *EmployeeService) DeleteEmployee(ctx context.Context, employeeId int64) error {
+	err := e.employeeRepo.Delete(ctx, employeeId)
+	switch {
+	case err == nil:
+	case errors.Is(err, sql.ErrNoRows):
+		return ErrNotFound
+	default:
+		return err
+	}
+	return nil
+}
+
+func (e *EmployeeService) isEmployeeExists(ctx context.Context, employeeId int64) (bool, error) {
+
+	_, err := e.employeeRepo.GetEmployee(ctx, employeeId)
 
 	switch {
 	case err == nil:
