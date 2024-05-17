@@ -22,3 +22,6 @@ var DeleteEmployee string
 
 //go:embed get_employee.sql
 var GetEmployee string
+
+//go:embed get_list_by_company_id.sql
+var GetListByCompanyId string

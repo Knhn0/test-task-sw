@@ -24,7 +24,7 @@ func (e *EmployeeRepository) GetEmployee(ctx context.Context, employeeId int64) 
 	if err := e.db.GetContext(ctx, &employeeModel, query.GetEmployee, employeeId); err != nil {
 		return entity.EmployeeTransfer{}, err
 	}
-	return mapper.EmployeeMapFromDb(employeeModel), nil
+	return mapper.EmployeeTransferMapFromDb(employeeModel), nil
 }
 
 func (e *EmployeeRepository) Create(ctx context.Context, employee entity.Employee, passId int64, depId int64) (int64, error) {
@@ -56,4 +56,12 @@ func (e *EmployeeRepository) Delete(ctx context.Context, employeeId int64) error
 		return err
 	}
 	return nil
+}
+
+func (e *EmployeeRepository) GetListByCompanyId(ctx context.Context, companyId int) ([]entity.Employee, error) {
+	var employeeModel []models.EmployeeForList
+	if err := e.db.SelectContext(ctx, &employeeModel, query.GetListByCompanyId, companyId); err != nil {
+		return nil, err
+	}
+	return mapper.EmployeesSlice(employeeModel), nil
 }

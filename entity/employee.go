@@ -19,3 +19,15 @@ type EmployeeTransfer struct {
 	PassportId   int
 	DepartmentId int
 }
+
+type EmployeeForList struct {
+	Id              int
+	Name            string
+	Surname         string
+	Phone           string
+	CompanyId       int
+	PassportType    string
+	PassportNumber  string
+	DepartmentName  string
+	DepartmentPhone string
+}

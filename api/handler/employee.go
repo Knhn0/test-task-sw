@@ -112,7 +112,7 @@ func DeleteEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 }
 
 type getListEmployeesByCompanyIdUri struct {
-	CompanyId string `json:"companyId"`
+	CompanyId string `uri:"companyId"`
 }
 
 type getListEmployeesByCompanyIdResponse []getListEmployeesByCompanyIdElement
@@ -157,7 +157,7 @@ func newListEmployeesByCompanyIdResponse(employees []entity.Employee) getListEmp
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
 // @Router      /api/employee/list/{companyId} [get]
-func ListEmployeesByCompanyId(logger *zap.SugaredLogger) gin.HandlerFunc {
+func ListEmployeesByCompanyId(logger *zap.SugaredLogger, employeeService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req getListEmployeesByCompanyIdUri
 		if err := c.ShouldBindUri(&req); err != nil {
@@ -165,7 +165,9 @@ func ListEmployeesByCompanyId(logger *zap.SugaredLogger) gin.HandlerFunc {
 			return
 		}
 
-		var err error
+		companyId, _ := strconv.Atoi(req.CompanyId)
+
+		employees, err := employeeService.GetEmployeeListByCompanyId(c, companyId)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
@@ -178,7 +180,7 @@ func ListEmployeesByCompanyId(logger *zap.SugaredLogger) gin.HandlerFunc {
 			return
 		}
 
-		response := 1
+		response := newListEmployeesByCompanyIdResponse(employees)
 		thttp.OkResponseWithResult(c, response)
 	}
 }

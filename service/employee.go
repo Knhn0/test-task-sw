@@ -22,6 +22,8 @@ func NewUserService(repo employeeRepo, depServ *DepartmentService, passServ *Pas
 }
 
 func (e *EmployeeService) Create(ctx context.Context, employee entity.Employee) (int64, error) {
+	// нужно добавить ifExists
+
 	//isEmployeeExists, err := e.isEmployeeExists(ctx, int64(employee.Id))
 	//if err != nil {
 	//	return 0, err
@@ -87,6 +89,19 @@ func (e *EmployeeService) DeleteEmployee(ctx context.Context, employeeId int64) 
 		return err
 	}
 	return nil
+}
+
+func (e *EmployeeService) GetEmployeeListByCompanyId(ctx context.Context, companyId int) ([]entity.Employee, error) {
+	// нужно добавить ifExists
+	employees, err := e.employeeRepo.GetListByCompanyId(ctx, companyId)
+	switch {
+	case err == nil:
+	case errors.Is(err, sql.ErrNoRows):
+		return []entity.Employee{}, ErrNotFound
+	default:
+		return []entity.Employee{}, err
+	}
+	return employees, nil
 }
 
 func (e *EmployeeService) isEmployeeExists(ctx context.Context, employeeId int64) (bool, error) {
