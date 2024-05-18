@@ -11,6 +11,7 @@ type employeeRepo interface {
 	Delete(ctx context.Context, employeeId int64) error
 	GetListByCompanyId(ctx context.Context, companyId int) ([]entity.Employee, error)
 	GetListByDepartmentName(ctx context.Context, depName string) ([]entity.Employee, error)
+	UpdateEmployee(ctx context.Context, employeeId int, employee map[string]interface{}) (entity.Employee, error)
 }
 
 type passportRepo interface {

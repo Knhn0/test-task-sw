@@ -73,3 +73,11 @@ func (e *EmployeeRepository) GetListByDepartmentName(ctx context.Context, depNam
 	}
 	return mapper.EmployeesSlice(employeeModel), nil
 }
+
+func (e *EmployeeRepository) UpdateEmployee(ctx context.Context, employeeId int, employee map[string]interface{}) (entity.Employee, error) {
+	updatedEmployee, err := e.db.ExecContext(ctx, query.UpdateEmploye, employeeId, employee)
+	if err != nil {
+		return entity.Employee{}, err
+	}
+	return mapper.MapEmployeeForList(updatedEmployee), nil
+}

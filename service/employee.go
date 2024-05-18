@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"test-task-sw/entity"
 )
 
@@ -147,8 +146,16 @@ func (e *EmployeeService) isEmployeeExists(ctx context.Context, employeeId int64
 
 func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int, updEmployee map[string]interface{}) (entity.Employee, error) {
 	filteredData := e.filterJSON(updEmployee)
-	fmt.Println(filteredData)
-	return entity.Employee{}, nil
+	updatedEmployee, err := e.employeeRepo.UpdateEmployee(ctx, employeeId, filteredData)
+	switch {
+	case err == nil:
+	case errors.Is(err, sql.ErrNoRows):
+		return entity.Employee{}, nil
+	default:
+		return entity.Employee{}, err
+	}
+
+	return updatedEmployee, nil
 }
 
 func (e *EmployeeService) filterJSON(data map[string]interface{}) map[string]interface{} {

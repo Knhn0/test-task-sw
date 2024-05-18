@@ -268,14 +268,14 @@ type updateEmployeeUri struct {
 }
 
 type updateEmployeeRequest struct {
-	Name            *string `json:"name,omitempty"`
-	Surname         *string `json:"surname,omitempty"`
-	Phone           *string `json:"phone,omitempty"`
-	CompanyId       *int    `json:"company_id,omitempty"`
-	PassportType    *string `json:"passport_type,omitempty"`
-	PassportNumber  *string `json:"passport_number,omitempty"`
-	DepartmentName  *string `json:"department_name,omitempty"`
-	DepartmentPhone *string `json:"department_phone,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Surname         string `json:"surname,omitempty"`
+	Phone           string `json:"phone,omitempty"`
+	CompanyId       *int   `json:"company_id,omitempty"`
+	PassportType    string `json:"passport_type,omitempty"`
+	PassportNumber  string `json:"passport_number,omitempty"`
+	DepartmentName  string `json:"department_name,omitempty"`
+	DepartmentPhone string `json:"department_phone,omitempty"`
 }
 
 type updateEmployeeResponse struct {
@@ -331,8 +331,11 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 		}
 
 		jsonData, _ := json.Marshal(req)
-		var data map[string]interface{}
-		json.Unmarshal(jsonData, &data)
+		var data map[string]any
+		err := json.Unmarshal(jsonData, &data)
+		if err != nil {
+			return
+		}
 
 		//employeeId, _ := strconv.Atoi(id.employeeId)
 		fmt.Println(id.employeeId)
