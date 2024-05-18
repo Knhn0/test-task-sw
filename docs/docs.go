@@ -403,9 +403,6 @@ const docTemplate = `{
         },
         "handler.updateEmployeeResponse": {
             "type": "object",
-            "required": [
-                "id"
-            ],
             "properties": {
                 "company_id": {
                     "type": "integer"

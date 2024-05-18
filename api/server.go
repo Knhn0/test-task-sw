@@ -56,7 +56,7 @@ func NewServer(
 			employeeGroup.DELETE("delete/:employeeId", handler.DeleteEmployee(logger, employeeService))
 			employeeGroup.GET("list/:companyId", handler.ListEmployeesByCompanyId(logger, employeeService))
 			employeeGroup.GET("list/department/:depName", handler.ListEmployeesByDepartment(logger, employeeService))
-			employeeGroup.PUT("update/:employeeId", handler.UpdateEmployee(logger))
+			employeeGroup.PUT("update/:employeeId", handler.UpdateEmployee(logger, employeeService))
 		}
 	}
 	return &Server{

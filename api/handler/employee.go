@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
@@ -263,7 +264,7 @@ func ListEmployeesByDepartment(logger *zap.SugaredLogger, employeeService *servi
 }
 
 type updateEmployeeUri struct {
-	userId string `uri:"employeeId"`
+	employeeId string `uri:"employeeId"`
 }
 
 type updateEmployeeRequest struct {
@@ -278,7 +279,7 @@ type updateEmployeeRequest struct {
 }
 
 type updateEmployeeResponse struct {
-	Id              int    `json:"id" binding:"required"`
+	Id              int    `json:"id"`
 	Name            string `json:"name"`
 	Surname         string `json:"surname"`
 	Phone           string `json:"phone"`
@@ -308,28 +309,36 @@ func newUpdateEmployeeResponse(employee entity.Employee) updateEmployeeResponse 
 // @Tags		Employee
 // @Accept      json
 // @Produce     json
-// @Param       employeeId path string true "Идентификатор пользователя"
+// @Param       employeeId path string true "Идентификатор работника"
 // @Param 		request body updateEmployeeRequest true "da"
 // @Success     200 {object} thttp.ResponseWithDetails[updateEmployeeResponse]
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     409 {object} thttp.ResponseError "Already exists"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
 // @Router      /api/employee/update/{employeeId} [put]
-func UpdateEmployee(logger *zap.SugaredLogger) gin.HandlerFunc {
+func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req updateEmployeeRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
-			return
-		}
-
 		var id updateEmployeeUri
 		if err := c.ShouldBindUri(&id); err != nil {
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
-		var err error
+		var req updateEmployeeRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
+			return
+		}
+
+		jsonData, _ := json.Marshal(req)
+		var data map[string]interface{}
+		json.Unmarshal(jsonData, &data)
+
+		//employeeId, _ := strconv.Atoi(id.employeeId)
+		fmt.Println(id.employeeId)
+
+		updatedEmployee, err := employeeService.UpdateEmployee(c, 1, data)
+
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
@@ -347,6 +356,6 @@ func UpdateEmployee(logger *zap.SugaredLogger) gin.HandlerFunc {
 		}
 
 		//response :=
-		thttp.OkResponseWithResult(c, 1)
+		thttp.OkResponseWithResult(c, updatedEmployee)
 	}
 }

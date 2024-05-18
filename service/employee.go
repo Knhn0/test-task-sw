@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"test-task-sw/entity"
 )
 
@@ -142,4 +143,35 @@ func (e *EmployeeService) isEmployeeExists(ctx context.Context, employeeId int64
 	}
 
 	return true, nil
+}
+
+func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int, updEmployee map[string]interface{}) (entity.Employee, error) {
+	filteredData := e.filterJSON(updEmployee)
+	fmt.Println(filteredData)
+	return entity.Employee{}, nil
+}
+
+func (e *EmployeeService) filterJSON(data map[string]interface{}) map[string]interface{} {
+	filteredData := make(map[string]interface{})
+	for key, value := range data {
+		switch v := value.(type) {
+		case string:
+			if v != "" {
+				filteredData[key] = v
+			}
+		case []interface{}:
+			if len(v) > 0 {
+				filteredData[key] = v
+			}
+		case map[string]interface{}:
+			if len(v) > 0 {
+				filteredData[key] = e.filterJSON(v)
+			}
+		default:
+			if v != nil {
+				filteredData[key] = v
+			}
+		}
+	}
+	return filteredData
 }
