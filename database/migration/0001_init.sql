@@ -37,4 +37,3 @@ drop extension if exists "uuid-ossp";
 drop extension if exists "users";
 drop extension if exists "passsports";
 drop extension if exists "departments";
-drop extension if exists "employees_passports_dep"

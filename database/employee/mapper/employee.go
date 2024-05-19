@@ -1,8 +1,8 @@
 package mapper
 
 import (
+	"test-task-sw/database/employee/models"
 	"test-task-sw/entity"
-	"test-task-sw/repository/models"
 )
 
 // need check

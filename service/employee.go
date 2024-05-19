@@ -22,45 +22,11 @@ func NewUserService(repo employeeRepo, depServ *DepartmentService, passServ *Pas
 }
 
 func (e *EmployeeService) Create(ctx context.Context, employee entity.Employee) (int64, error) {
-	// нужно добавить ifExists
 
-	//isEmployeeExists, err := e.isEmployeeExists(ctx, int64(employee.Id))
-	//if err != nil {
-	//	return 0, err
-	//}
-	//
-	//if isEmployeeExists {
-	//	err = ErrAlreadyExists
-	//	return 0, err
-	//}
-
-	passport := entity.Passport{
-		Type:   employee.Passport.Type,
-		Number: employee.Passport.Number,
-	}
-	passId, err := e.passportService.CreatePassport(ctx, passport)
+	employeeId, err := e.employeeRepo.Create(ctx, employee)
 	switch {
 	case err == nil:
 	default:
-		return 0, err
-	}
-
-	department := entity.Department{
-		Name:  employee.Department.Name,
-		Phone: employee.Department.Phone,
-	}
-	depId, err := e.departmentService.CreateDepartment(ctx, department)
-	switch {
-	case err == nil:
-	default:
-		return 0, err
-	}
-
-	employeeId, err := e.employeeRepo.Create(ctx, employee, passId, depId)
-	switch {
-	case err == nil:
-	default:
-		e.passportService.DeletePassport(ctx, passId)
 		return 0, err
 	}
 
@@ -163,29 +129,4 @@ func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int64, 
 	}
 
 	return nil
-}
-
-func (e *EmployeeService) filterJSON(data map[string]interface{}) map[string]interface{} {
-	filteredData := make(map[string]interface{})
-	for key, value := range data {
-		switch v := value.(type) {
-		case string:
-			if v != "" {
-				filteredData[key] = v
-			}
-		case []interface{}:
-			if len(v) > 0 {
-				filteredData[key] = v
-			}
-		case map[string]interface{}:
-			if len(v) > 0 {
-				filteredData[key] = e.filterJSON(v)
-			}
-		default:
-			if v != nil {
-				filteredData[key] = v
-			}
-		}
-	}
-	return filteredData
 }

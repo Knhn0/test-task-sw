@@ -362,7 +362,6 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 			return
 		}
 
-		//response :=
 		thttp.OkResponse(c)
 	}
 }

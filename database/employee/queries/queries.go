@@ -1,21 +1,9 @@
-package query
+package queries
 
 import _ "embed"
 
 //go:embed insert_employee_data.sql
 var InsertEmployeeData string
-
-//go:embed insert_passport_data.sql
-var InsertPassportData string
-
-//go:embed insert_department_data.sql
-var InsertDepartmentData string
-
-//go:embed delete_passport.sql
-var DeletePassport string
-
-//go:embed delete_department.sql
-var DeleteDepartment string
 
 //go:embed delete_employee.sql
 var DeleteEmployee string
@@ -31,9 +19,3 @@ var GetListEmployeesByDepName string
 
 //go:embed update_employee.sql
 var UpdateEmployee string
-
-//go:embed update_passport.sql
-var UpdatePassport string
-
-//go:embed update_department.sql
-var UpdateDepartment string

@@ -7,7 +7,7 @@ import (
 
 type employeeRepo interface {
 	//GetEmployee(ctx context.Context, employeeId int64) (entity.EmployeeTransfer, error)
-	Create(ctx context.Context, employee entity.Employee, passId int64, depId int64) (int64, error)
+	Create(ctx context.Context, employee entity.Employee) (int64, error)
 	Delete(ctx context.Context, employeeId int64) error
 	GetListByCompanyId(ctx context.Context, companyId int) ([]entity.Employee, error)
 	GetListByDepartmentName(ctx context.Context, depName string) ([]entity.Employee, error)

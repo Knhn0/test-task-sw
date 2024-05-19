@@ -1,10 +1,10 @@
-package repository
+package department
 
 import (
 	"context"
+	depqueries "test-task-sw/database/department/queries"
 	"test-task-sw/entity"
 	"test-task-sw/lib/tpostgres"
-	"test-task-sw/repository/query"
 )
 
 type DepartmentRepository struct {
@@ -24,7 +24,7 @@ func (d *DepartmentRepository) Create(ctx context.Context, department entity.Dep
 	}
 
 	var depId int64
-	err := d.db.GetContext(ctx, &depId, query.InsertDepartmentData, departmentData...)
+	err := d.db.GetContext(ctx, &depId, depqueries.InsertDepartmentData, departmentData...)
 	if err != nil {
 		return 0, err
 	}
@@ -33,7 +33,7 @@ func (d *DepartmentRepository) Create(ctx context.Context, department entity.Dep
 }
 
 func (d *DepartmentRepository) Delete(ctx context.Context, departmentId int64) error {
-	_, err := d.db.ExecContext(ctx, query.DeleteDepartment, departmentId)
+	_, err := d.db.ExecContext(ctx, depqueries.DeleteDepartment, departmentId)
 	if err != nil {
 		return err
 	}

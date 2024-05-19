@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"test-task-sw/api"
 	"test-task-sw/config"
+	"test-task-sw/database/department"
+	"test-task-sw/database/employee"
+	"test-task-sw/database/passport"
 	"test-task-sw/lib/tctx"
 	"test-task-sw/lib/tpostgres"
-	"test-task-sw/repository"
 	"test-task-sw/service"
 )
 
@@ -25,9 +27,9 @@ type App struct {
 	pgDb *tpostgres.Postgres
 
 	//repos
-	employeeRepo   *repository.EmployeeRepository
-	passportRepo   *repository.PassportRepository
-	departmentRepo *repository.DepartmentRepository
+	employeeRepo   *employee.EmployeeRepository
+	passportRepo   *passport.PassportRepository
+	departmentRepo *department.DepartmentRepository
 
 	//services
 	employeeService   *service.EmployeeService
@@ -67,9 +69,9 @@ func (a *App) initDatabases() error {
 	}
 
 	// Repos
-	a.employeeRepo = repository.NewUserRepository(a.pgDb)
-	a.passportRepo = repository.NewPassportRepository(a.pgDb)
-	a.departmentRepo = repository.NewDepartmentRepository(a.pgDb)
+	a.employeeRepo = employee.NewUserRepository(a.pgDb)
+	a.passportRepo = passport.NewPassportRepository(a.pgDb)
+	a.departmentRepo = department.NewDepartmentRepository(a.pgDb)
 
 	return nil
 }
