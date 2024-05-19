@@ -138,7 +138,7 @@ paths:
       summary: Удаление работника
       tags:
       - Employee
-  /api/employee/list/{companyId}:
+  /api/employee/list/company/{companyId}:
     get:
       consumes:
       - application/json

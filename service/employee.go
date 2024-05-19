@@ -4,20 +4,23 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"test-task-sw/database/department"
+	"test-task-sw/database/employee"
+	"test-task-sw/database/passport"
 	"test-task-sw/service/models"
 )
 
 type EmployeeService struct {
-	passportService   *PassportService
-	departmentService *DepartmentService
-	employeeRepo      employeeRepo
+	employeeRepo   *employee.Impl
+	passportRepo   *passport.Impl
+	departmentRepo *department.Impl
 }
 
-func NewUserService(repo employeeRepo, depServ *DepartmentService, passServ *PassportService) *EmployeeService {
+func NewUserService(repo *employee.Impl, passportRepo *passport.Impl, departmentRepo *department.Impl) *EmployeeService {
 	return &EmployeeService{
-		passServ,
-		depServ,
 		repo,
+		passportRepo,
+		departmentRepo,
 	}
 }
 
@@ -74,8 +77,6 @@ func (e *EmployeeService) GetEmployeeListByCompanyId(ctx context.Context, compan
 	employees, err := e.employeeRepo.GetListByCompanyId(ctx, companyId)
 	switch {
 	case err == nil:
-	case errors.Is(err, sql.ErrNoRows):
-		return []models.Employee{}, ErrNotFound
 	default:
 		return []models.Employee{}, err
 	}
@@ -90,8 +91,6 @@ func (e *EmployeeService) GetEmployeeListByDepartmentName(ctx context.Context, d
 	}
 	switch {
 	case err == nil:
-	case errors.Is(err, sql.ErrNoRows):
-		return []models.Employee{}, ErrNotFound
 	default:
 		return []models.Employee{}, err
 	}
@@ -122,7 +121,7 @@ func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int64, 
 	}
 
 	lastDbModel.PartialUpdate(updEmployee)
-	err = e.employeeRepo.UpdateEmployee(ctx, employeeId, lastDbModel)
+	err = e.employeeRepo.Update(ctx, employeeId, lastDbModel)
 
 	switch {
 	case err == nil:

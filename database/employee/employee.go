@@ -2,52 +2,61 @@ package employee
 
 import (
 	"context"
-	depqueries "test-task-sw/database/department/queries"
+	"test-task-sw/database/department"
 	"test-task-sw/database/employee/mapper"
 	"test-task-sw/database/employee/models"
 	"test-task-sw/database/employee/queries"
-	passqueries "test-task-sw/database/passport/queries"
+	"test-task-sw/database/passport"
 	"test-task-sw/lib/tpostgres"
 	smodels "test-task-sw/service/models"
 )
 
-type EmployeeRepository struct {
-	db *tpostgres.Postgres
+type Repo interface {
+	Create(ctx context.Context, employee smodels.Employee) (int64, error)
+	Delete(ctx context.Context, employeeId int64) error
+	GetListByCompanyId(ctx context.Context, companyId int) ([]smodels.Employee, error)
+	GetListByDepartmentName(ctx context.Context, depName string) ([]smodels.Employee, error)
+	Update(ctx context.Context, employeeId int64, employee smodels.Employee) error
+	Get(ctx context.Context, employeeId int64) (smodels.Employee, error)
 }
 
-func NewUserRepository(db *tpostgres.Postgres) *EmployeeRepository {
-	return &EmployeeRepository{
-		db: db,
+type Impl struct {
+	db             *tpostgres.Postgres
+	passportRepo   *passport.Impl
+	departmentRepo *department.Impl
+}
+
+func NewRepository(db *tpostgres.Postgres, passportRepo *passport.Impl, departmentRepo *department.Impl) Repo {
+	return &Impl{
+		db:             db,
+		passportRepo:   passportRepo,
+		departmentRepo: departmentRepo,
 	}
 }
 
-func (e *EmployeeRepository) Create(ctx context.Context, employee smodels.Employee) (int64, error) {
-
+func (e *Impl) Create(ctx context.Context, employee smodels.Employee) (int64, error) {
 	tx, err := e.db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
 	}
-
 	defer tx.Rollback()
 
-	var passId int64
-	err = tx.QueryRowContext(ctx, passqueries.CreatePassport, employee.Passport.Type, employee.Passport.Number).Scan(&passId)
-	if err != nil {
-		return 0, err
-	}
-
-	var depId int64
-	err = tx.QueryRowContext(ctx, depqueries.CreateDepartment, employee.Department.Name, employee.Department.Phone).Scan(&depId)
-	if err != nil {
-		return 0, err
-	}
-
 	var employeeId int64
+
+	passId, err := e.passportRepo.Create(ctx, tx, employee.Passport)
+	if err != nil {
+		return 0, err
+	}
+
+	depId, err := e.departmentRepo.Create(ctx, tx, employee.Department)
+	if err != nil {
+		return 0, err
+	}
+
 	err = tx.QueryRowContext(ctx, queries.CreateEmployee, employee.Name, employee.Surname, employee.Phone, employee.CompanyId, passId, depId).Scan(&employeeId)
 	if err != nil {
 		return 0, err
 	}
-
 	if err = tx.Commit(); err != nil {
 		return 0, err
 	}
@@ -55,13 +64,11 @@ func (e *EmployeeRepository) Create(ctx context.Context, employee smodels.Employ
 	return employeeId, nil
 }
 
-func (e *EmployeeRepository) Delete(ctx context.Context, employeeId int64) error {
-
+func (e *Impl) Delete(ctx context.Context, employeeId int64) error {
 	tx, err := e.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
-
 	defer tx.Rollback()
 
 	var passportId int64
@@ -70,7 +77,7 @@ func (e *EmployeeRepository) Delete(ctx context.Context, employeeId int64) error
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, passqueries.DeletePassport, passportId)
+	err = e.passportRepo.Delete(ctx, tx, passportId)
 	if err != nil {
 		return err
 	}
@@ -82,15 +89,16 @@ func (e *EmployeeRepository) Delete(ctx context.Context, employeeId int64) error
 	return nil
 }
 
-func (e *EmployeeRepository) GetListByCompanyId(ctx context.Context, companyId int) ([]smodels.Employee, error) {
+func (e *Impl) GetListByCompanyId(ctx context.Context, companyId int) ([]smodels.Employee, error) {
 	var employeeModel []models.Employee
 	if err := e.db.SelectContext(ctx, &employeeModel, queries.GetListByCompanyId, companyId); err != nil {
 		return nil, err
 	}
+
 	return mapper.EmployeesSlice(employeeModel), nil
 }
 
-func (e *EmployeeRepository) GetListByDepartmentName(ctx context.Context, depName string) ([]smodels.Employee, error) {
+func (e *Impl) GetListByDepartmentName(ctx context.Context, depName string) ([]smodels.Employee, error) {
 	var employeeModel []models.Employee
 	if err := e.db.SelectContext(ctx, &employeeModel, queries.GetListEmployeesByDepName, depName); err != nil {
 		return nil, err
@@ -99,7 +107,7 @@ func (e *EmployeeRepository) GetListByDepartmentName(ctx context.Context, depNam
 	return mapper.EmployeesSlice(employeeModel), nil
 }
 
-func (e *EmployeeRepository) Get(ctx context.Context, employeeId int64) (smodels.Employee, error) {
+func (e *Impl) Get(ctx context.Context, employeeId int64) (smodels.Employee, error) {
 	var employeeModel models.Employee
 	if err := e.db.GetContext(ctx, &employeeModel, queries.GetEmployee, employeeId); err != nil {
 		return smodels.Employee{}, err
@@ -108,42 +116,27 @@ func (e *EmployeeRepository) Get(ctx context.Context, employeeId int64) (smodels
 	return mapper.MapEmployee(employeeModel), nil
 }
 
-func (e *EmployeeRepository) UpdateEmployee(ctx context.Context, employeeId int64, employee smodels.Employee) error {
+func (e *Impl) Update(ctx context.Context, employeeId int64, employee smodels.Employee) error {
 	tx, err := e.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
-
 	defer tx.Rollback()
 
-	var passId int
-	var depId int
+	var passportId int64
+	var departmentId int64
 
-	err = tx.QueryRowContext(ctx, queries.UpdateEmployee, employeeId, employee.Name, employee.Surname, employee.Phone, employee.CompanyId).Scan(&passId, &depId)
+	err = tx.QueryRowContext(ctx, queries.UpdateEmployee, employeeId, employee.Name, employee.Surname, employee.Phone, employee.CompanyId).Scan(&passportId, &departmentId)
 	if err != nil {
 		return err
 	}
 
-	argsForPassport := []interface{}{
-		passId,
-		employee.Passport.Type,
-		employee.Passport.Number,
-	}
-	_, err = tx.ExecContext(ctx, passqueries.UpdatePassport, argsForPassport...)
+	err = e.passportRepo.Update(ctx, tx, passportId, employee.Passport)
 	if err != nil {
 		return err
 	}
 
-	argsForDepartment := []interface{}{
-		depId,
-		employee.Department.Name,
-		employee.Department.Phone,
-	}
-	_, err = tx.ExecContext(ctx, depqueries.UpdateDepartment, argsForDepartment...)
-	if err != nil {
-		return err
-	}
-
+	err = e.departmentRepo.Update(ctx, tx, departmentId, employee.Department)
 	if err = tx.Commit(); err != nil {
 		return err
 	}

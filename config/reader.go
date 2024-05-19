@@ -26,7 +26,7 @@ func Read() Config {
 	return c
 }
 
-const _serviceEnvVarName = "ENV"
+const serviceEnvVarName = "ENV"
 
 type Env string
 
@@ -34,11 +34,10 @@ const (
 	EnvProd  = Env("prod")
 	EnvTest  = Env("test")
 	EnvLocal = Env("local")
-	EnvEmpty = Env("")
 )
 
 func readEnv() (Env, string) {
-	env := Env(os.Getenv(_serviceEnvVarName))
+	env := Env(os.Getenv(serviceEnvVarName))
 
 	var configName string
 	switch env {

@@ -29,15 +29,15 @@ func CreateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 			return
 		}
 
-		if req.Validate() == false {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "Ошибка валидации")
+		if !req.Validate() {
+			thttp.ErrorResponse(c, http.StatusBadRequest, "validation error")
 		}
 
 		id, err := employeeService.Create(c, req)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrAlreadyExists):
-			thttp.ErrorResponse(c, http.StatusUnauthorized, "Пользователь уже существует")
+			thttp.ErrorResponse(c, http.StatusUnauthorized, "employee not found")
 			return
 		default:
 			logger.Error(err.Error())
@@ -82,7 +82,7 @@ func DeleteEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, "Пользователь не существует")
+			thttp.ErrorResponse(c, http.StatusNotFound, "employee not found")
 			return
 		default:
 			logger.Error(err.Error())
@@ -106,7 +106,7 @@ type getListEmployeesByCompanyIdUri struct {
 // @Success     200 {object} thttp.ResponseWithDetails[[]models.Employee]
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
-// @Router      /api/employee/list/{companyId} [get]
+// @Router      /api/employee/list/company/{companyId} [get]
 func ListEmployeesByCompanyId(logger *zap.SugaredLogger, employeeService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req getListEmployeesByCompanyIdUri
@@ -120,10 +120,6 @@ func ListEmployeesByCompanyId(logger *zap.SugaredLogger, employeeService *servic
 		employees, err := employeeService.GetEmployeeListByCompanyId(c, companyId)
 		switch {
 		case err == nil:
-		case errors.Is(err, service.ErrNotFound):
-			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, "Работники не найдены")
-			return
 		default:
 			logger.Error(err.Error())
 			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal  server error")
@@ -159,10 +155,6 @@ func ListEmployeesByDepartment(logger *zap.SugaredLogger, employeeService *servi
 		employees, err := employeeService.GetEmployeeListByDepartmentName(c, req.DepName)
 		switch {
 		case err == nil:
-		case errors.Is(err, service.ErrNotFound):
-			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, "Работники не найдены")
-			return
 		default:
 			logger.Error(err.Error())
 			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal  server error")
@@ -203,8 +195,8 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 			return
 		}
 
-		if req.Validate() == false {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "Ошибка валидации")
+		if !req.Validate() {
+			thttp.ErrorResponse(c, http.StatusBadRequest, "validation error")
 		}
 
 		employeeId, err := strconv.ParseInt(id.EmployeeId, 10, 64)
@@ -217,7 +209,7 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, "Работник не найден")
+			thttp.ErrorResponse(c, http.StatusNotFound, "employee not found")
 			return
 		default:
 			logger.Error(err.Error())

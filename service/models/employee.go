@@ -17,32 +17,11 @@ type Employee struct {
 	Department Department
 }
 
-type getListEmployeesByCompanyIdResponse []getListEmployeeElement
-
-type getListEmployeeElement struct {
-	Id              int    `json:"id"`
-	Name            string `json:"name"`
-	Surname         string `json:"surname"`
-	Phone           string `json:"phone"`
-	CompanyId       int    `json:"company_id"`
-	PassportType    string `json:"passport_type"`
-	PassportNumber  string `json:"passport_number"`
-	DepartmentName  string `json:"department_name"`
-	DepartmentPhone string `json:"department_phone"`
-}
-
 func (e *Employee) Validate() bool {
-	if !_passportRegex.Match([]byte(e.Passport.Number)) {
-		return false
-	}
-	if !_phoneRegex.Match([]byte(e.Phone)) {
-		return false
-	}
-	if !_phoneRegex.Match([]byte(e.Department.Phone)) {
-		return false
-	}
+	return _passportRegex.Match([]byte(e.Passport.Number)) &&
+		_phoneRegex.Match([]byte(e.Phone)) &&
+		_phoneRegex.Match([]byte(e.Department.Phone))
 
-	return true
 }
 
 func (e *Employee) PartialUpdate(updateModel Employee) {
