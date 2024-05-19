@@ -2,8 +2,8 @@ package passportqueries
 
 import _ "embed"
 
-//go:embed insert_passport_data.sql
-var InsertPassportData string
+//go:embed create_passport.sql
+var CreatePassport string
 
 //go:embed delete_passport.sql
 var DeletePassport string

@@ -7,9 +7,9 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"strconv"
-	"test-task-sw/entity"
 	"test-task-sw/lib/thttp"
 	"test-task-sw/service"
+	"test-task-sw/service/models"
 )
 
 // CreateEmployee godoc
@@ -17,16 +17,20 @@ import (
 // @Tags		Employee
 // @Accept      json
 // @Produce     json
-// @Param       request body /service/models/employee.Employee true "Данные пользователя"
+// @Param       input body models.Employee true "Данные пользователя"
 // @Success     200
 // @Router      /api/employee/create [post]
 func CreateEmployee(logger *zap.SugaredLogger, employeeService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req entity.Employee
+		var req models.Employee
 		if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
 			logger.Error(err.Error())
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
+		}
+
+		if req.Validate() == false {
+			thttp.ErrorResponse(c, http.StatusBadRequest, "Ошибка валидации")
 		}
 
 		id, err := employeeService.Create(c, req)
@@ -40,6 +44,7 @@ func CreateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 			return
 		}
+
 		thttp.OkResponseWithResult(c, id)
 		return
 	}
@@ -77,12 +82,13 @@ func DeleteEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, service.ErrNotFound.Error())
+			thttp.ErrorResponse(c, http.StatusNotFound, "Пользователь не существует")
 			return
 		default:
 			logger.Error(err.Error())
 			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		}
+
 		thttp.OkResponse(c)
 	}
 }
@@ -91,45 +97,13 @@ type getListEmployeesByCompanyIdUri struct {
 	CompanyId string `uri:"companyId"`
 }
 
-type getListEmployeesByCompanyIdResponse []getListEmployeesByCompanyIdElement
-
-type getListEmployeesByCompanyIdElement struct {
-	Id              int    `json:"id"`
-	Name            string `json:"name"`
-	Surname         string `json:"surname"`
-	Phone           string `json:"phone"`
-	CompanyId       int    `json:"company_id"`
-	PassportType    string `json:"passport_type"`
-	PassportNumber  string `json:"passport_number"`
-	DepartmentName  string `json:"department_name"`
-	DepartmentPhone string `json:"department_phone"`
-}
-
-func newListEmployeesByCompanyIdResponse(employees []entity.Employee) getListEmployeesByCompanyIdResponse {
-	var response = make(getListEmployeesByCompanyIdResponse, 0, len(employees))
-	for _, employee := range employees {
-		response = append(response, getListEmployeesByCompanyIdElement{
-			Id:              employee.Id,
-			Name:            employee.Name,
-			Surname:         employee.Surname,
-			Phone:           employee.Phone,
-			CompanyId:       employee.CompanyId,
-			PassportType:    employee.Passport.Type,
-			PassportNumber:  employee.Passport.Number,
-			DepartmentName:  employee.Department.Name,
-			DepartmentPhone: employee.Department.Phone,
-		})
-	}
-	return response
-}
-
 // ListEmployeesByCompanyId godoc
 // @Summary     Получение работников по id компании
 // @Tags		Employee
 // @Accept      json
 // @Produce     json
 // @Param       companyId path string true "Идентификатор компании"
-// @Success     200 {object} thttp.ResponseWithDetails[getListEmployeesByCompanyIdResponse]
+// @Success     200 {object} thttp.ResponseWithDetails[[]models.Employee]
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
 // @Router      /api/employee/list/{companyId} [get]
@@ -148,7 +122,7 @@ func ListEmployeesByCompanyId(logger *zap.SugaredLogger, employeeService *servic
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, service.ErrNotFound.Error())
+			thttp.ErrorResponse(c, http.StatusNotFound, "Работники не найдены")
 			return
 		default:
 			logger.Error(err.Error())
@@ -156,45 +130,12 @@ func ListEmployeesByCompanyId(logger *zap.SugaredLogger, employeeService *servic
 			return
 		}
 
-		response := newListEmployeesByCompanyIdResponse(employees)
-		thttp.OkResponseWithResult(c, response)
+		thttp.OkResponseWithResult(c, employees)
 	}
 }
 
 type listEmployeesByDepartmentUri struct {
 	DepName string `uri:"depName"`
-}
-
-type listEmployeesByDepartmentResponse []listEmployeesByDepartmentElement
-
-type listEmployeesByDepartmentElement struct {
-	Id              int    `json:"id"`
-	Name            string `json:"name"`
-	Surname         string `json:"surname"`
-	Phone           string `json:"phone"`
-	CompanyId       int    `json:"company_id"`
-	PassportType    string `json:"passport_type"`
-	PassportNumber  string `json:"passport_number"`
-	DepartmentName  string `json:"department_name"`
-	DepartmentPhone string `json:"department_phone"`
-}
-
-func newListEmployeesByDepartmentResponse(employees []entity.Employee) listEmployeesByDepartmentResponse {
-	var response = make(listEmployeesByDepartmentResponse, 0, len(employees))
-	for _, employee := range employees {
-		response = append(response, listEmployeesByDepartmentElement{
-			Id:              employee.Id,
-			Name:            employee.Name,
-			Surname:         employee.Surname,
-			Phone:           employee.Phone,
-			CompanyId:       employee.CompanyId,
-			PassportType:    employee.Passport.Type,
-			PassportNumber:  employee.Passport.Number,
-			DepartmentName:  employee.Department.Name,
-			DepartmentPhone: employee.Department.Phone,
-		})
-	}
-	return response
 }
 
 // ListEmployeesByDepartment godoc
@@ -203,7 +144,7 @@ func newListEmployeesByDepartmentResponse(employees []entity.Employee) listEmplo
 // @Accept      json
 // @Produce     json
 // @Param       depName path string true "Название отдела"
-// @Success     200 {object} thttp.ResponseWithDetails[listEmployeesByDepartmentResponse]
+// @Success     200 {object} thttp.ResponseWithDetails[[]models.Employee]
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
 // @Router      /api/employee/list/department/{depName} [get]
@@ -216,12 +157,11 @@ func ListEmployeesByDepartment(logger *zap.SugaredLogger, employeeService *servi
 		}
 
 		employees, err := employeeService.GetEmployeeListByDepartmentName(c, req.DepName)
-
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, service.ErrNotFound.Error())
+			thttp.ErrorResponse(c, http.StatusNotFound, "Работники не найдены")
 			return
 		default:
 			logger.Error(err.Error())
@@ -229,50 +169,12 @@ func ListEmployeesByDepartment(logger *zap.SugaredLogger, employeeService *servi
 			return
 		}
 
-		response := newListEmployeesByDepartmentResponse(employees)
-		thttp.OkResponseWithResult(c, response)
+		thttp.OkResponseWithResult(c, employees)
 	}
 }
 
 type updateEmployeeUri struct {
 	EmployeeId string `uri:"employeeId"`
-}
-
-type updateEmployeeRequest struct {
-	Name            string `json:"name,omitempty"`
-	Surname         string `json:"surname,omitempty"`
-	Phone           string `json:"phone,omitempty"`
-	CompanyId       *int   `json:"company_id,omitempty"`
-	PassportType    string `json:"passport_type,omitempty"`
-	PassportNumber  string `json:"passport_number,omitempty"`
-	DepartmentName  string `json:"department_name,omitempty"`
-	DepartmentPhone string `json:"department_phone,omitempty"`
-}
-
-type updateEmployeeResponse struct {
-	Id              int    `json:"id"`
-	Name            string `json:"name"`
-	Surname         string `json:"surname"`
-	Phone           string `json:"phone"`
-	CompanyId       int    `json:"company_id"`
-	PassportType    string `json:"passport_type"`
-	PassportNumber  string `json:"passport_number"`
-	DepartmentName  string `json:"department_name"`
-	DepartmentPhone string `json:"department_phone"`
-}
-
-func newUpdateEmployeeResponse(employee entity.Employee) updateEmployeeResponse {
-	return updateEmployeeResponse{
-		Id:              employee.Id,
-		Name:            employee.Name,
-		Surname:         employee.Surname,
-		Phone:           employee.Phone,
-		CompanyId:       employee.CompanyId,
-		PassportType:    employee.Passport.Type,
-		PassportNumber:  employee.Passport.Number,
-		DepartmentName:  employee.Department.Name,
-		DepartmentPhone: employee.Department.Phone,
-	}
 }
 
 // UpdateEmployee godoc
@@ -281,8 +183,8 @@ func newUpdateEmployeeResponse(employee entity.Employee) updateEmployeeResponse 
 // @Accept      json
 // @Produce     json
 // @Param       employeeId path string true "Идентификатор работника"
-// @Param 		request body updateEmployeeRequest true "da"
-// @Success     200 {object} thttp.ResponseWithDetails[updateEmployeeResponse]
+// @Param 		input body models.Employee true "Данные для обновления работника"
+// @Success     200 {object} thttp.ResponseWithDetails[models.Employee]
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     409 {object} thttp.ResponseError "Already exists"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
@@ -295,10 +197,14 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 			return
 		}
 
-		var req updateEmployeeRequest
+		var req models.Employee
 		if err := c.ShouldBindJSON(&req); err != nil {
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
+		}
+
+		if req.Validate() == false {
+			thttp.ErrorResponse(c, http.StatusBadRequest, "Ошибка валидации")
 		}
 
 		employeeId, err := strconv.ParseInt(id.EmployeeId, 10, 64)
@@ -306,27 +212,12 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 			return
 		}
 
-		employee := entity.Employee{
-			Name:      req.Name,
-			Surname:   req.Surname,
-			Phone:     req.Phone,
-			CompanyId: *req.CompanyId,
-			Passport: entity.Passport{
-				Type:   req.PassportType,
-				Number: req.PassportNumber,
-			},
-			Department: entity.Department{
-				Name:  req.DepartmentName,
-				Phone: req.DepartmentPhone,
-			},
-		}
-
-		err = employeeService.UpdateEmployee(c, employeeId, employee)
+		err = employeeService.UpdateEmployee(c, employeeId, req)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, service.ErrNotFound.Error())
+			thttp.ErrorResponse(c, http.StatusNotFound, "Работник не найден")
 			return
 		default:
 			logger.Error(err.Error())

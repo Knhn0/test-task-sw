@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"test-task-sw/entity"
+	"test-task-sw/service/models"
 )
 
 type EmployeeService struct {
@@ -21,7 +21,7 @@ func NewUserService(repo employeeRepo, depServ *DepartmentService, passServ *Pas
 	}
 }
 
-func (e *EmployeeService) Create(ctx context.Context, employee entity.Employee) (int64, error) {
+func (e *EmployeeService) Create(ctx context.Context, employee models.Employee) (int64, error) {
 
 	employeeId, err := e.employeeRepo.Create(ctx, employee)
 	switch {
@@ -33,15 +33,16 @@ func (e *EmployeeService) Create(ctx context.Context, employee entity.Employee) 
 	return employeeId, nil
 }
 
-func (e *EmployeeService) GetEmployee(ctx context.Context, employeeId int64) (entity.Employee, error) {
+func (e *EmployeeService) GetEmployee(ctx context.Context, employeeId int64) (models.Employee, error) {
 	employee, err := e.employeeRepo.Get(ctx, employeeId)
 	switch {
 	case err == nil:
 	case errors.Is(err, sql.ErrNoRows):
-		return entity.Employee{}, ErrNotFound
+		return models.Employee{}, ErrNotFound
 	default:
-		return entity.Employee{}, err
+		return models.Employee{}, err
 	}
+
 	return employee, nil
 }
 
@@ -64,34 +65,37 @@ func (e *EmployeeService) DeleteEmployee(ctx context.Context, employeeId int64) 
 	default:
 		return err
 	}
+
 	return nil
 }
 
-func (e *EmployeeService) GetEmployeeListByCompanyId(ctx context.Context, companyId int) ([]entity.Employee, error) {
+func (e *EmployeeService) GetEmployeeListByCompanyId(ctx context.Context, companyId int) ([]models.Employee, error) {
 	// нужно добавить ifExists
 	employees, err := e.employeeRepo.GetListByCompanyId(ctx, companyId)
 	switch {
 	case err == nil:
 	case errors.Is(err, sql.ErrNoRows):
-		return []entity.Employee{}, ErrNotFound
+		return []models.Employee{}, ErrNotFound
 	default:
-		return []entity.Employee{}, err
+		return []models.Employee{}, err
 	}
+
 	return employees, nil
 }
 
-func (e *EmployeeService) GetEmployeeListByDepartmentName(ctx context.Context, departmentName string) ([]entity.Employee, error) {
+func (e *EmployeeService) GetEmployeeListByDepartmentName(ctx context.Context, departmentName string) ([]models.Employee, error) {
 	employees, err := e.employeeRepo.GetListByDepartmentName(ctx, departmentName)
 	if len(employees) == 0 {
-		return []entity.Employee{}, ErrNotFound
+		return []models.Employee{}, ErrNotFound
 	}
 	switch {
 	case err == nil:
 	case errors.Is(err, sql.ErrNoRows):
-		return []entity.Employee{}, ErrNotFound
+		return []models.Employee{}, ErrNotFound
 	default:
-		return []entity.Employee{}, err
+		return []models.Employee{}, err
 	}
+
 	return employees, nil
 }
 
@@ -110,7 +114,7 @@ func (e *EmployeeService) isEmployeeExists(ctx context.Context, employeeId int64
 	return true, nil
 }
 
-func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int64, updEmployee entity.Employee) error {
+func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int64, updEmployee models.Employee) error {
 
 	lastDbModel, err := e.employeeRepo.Get(ctx, employeeId)
 	if err != nil {

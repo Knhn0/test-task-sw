@@ -2,8 +2,8 @@ package queries
 
 import _ "embed"
 
-//go:embed insert_employee_data.sql
-var InsertEmployeeData string
+//go:embed create_employee.sql
+var CreateEmployee string
 
 //go:embed delete_employee.sql
 var DeleteEmployee string

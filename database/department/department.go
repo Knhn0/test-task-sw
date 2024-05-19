@@ -3,8 +3,8 @@ package department
 import (
 	"context"
 	depqueries "test-task-sw/database/department/queries"
-	"test-task-sw/entity"
 	"test-task-sw/lib/tpostgres"
+	"test-task-sw/service/models"
 )
 
 type DepartmentRepository struct {
@@ -17,14 +17,14 @@ func NewDepartmentRepository(db *tpostgres.Postgres) *DepartmentRepository {
 	}
 }
 
-func (d *DepartmentRepository) Create(ctx context.Context, department entity.Department) (int64, error) {
+func (d *DepartmentRepository) Create(ctx context.Context, department models.Department) (int64, error) {
 	departmentData := []interface{}{
 		department.Name,
 		department.Phone,
 	}
 
 	var depId int64
-	err := d.db.GetContext(ctx, &depId, depqueries.InsertDepartmentData, departmentData...)
+	err := d.db.GetContext(ctx, &depId, depqueries.CreateDepartment, departmentData...)
 	if err != nil {
 		return 0, err
 	}
@@ -37,5 +37,6 @@ func (d *DepartmentRepository) Delete(ctx context.Context, departmentId int64) e
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

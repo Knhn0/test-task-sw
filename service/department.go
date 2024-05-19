@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"test-task-sw/entity"
+	"test-task-sw/service/models"
 )
 
 type DepartmentService struct {
@@ -15,7 +15,7 @@ func NewDepartmentService(repo departmentRepo) *DepartmentService {
 	}
 }
 
-func (d *DepartmentService) CreateDepartment(ctx context.Context, department entity.Department) (int64, error) {
+func (d *DepartmentService) CreateDepartment(ctx context.Context, department models.Department) (int64, error) {
 	depId, err := d.departmentRepo.Create(ctx, department)
 	switch {
 	case err == nil:
@@ -33,5 +33,6 @@ func (d *DepartmentService) DeleteDepartment(ctx context.Context, departmentId i
 	default:
 		return err
 	}
+
 	return nil
 }

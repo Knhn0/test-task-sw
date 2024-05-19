@@ -34,6 +34,7 @@ func writeResponse[T any](c *gin.Context, r ResponseWithDetails[T]) {
 		// if error with result
 		_ = c.Error(err)
 		ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+
 		return
 	}
 }

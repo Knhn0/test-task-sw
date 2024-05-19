@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"test-task-sw/entity"
+	"test-task-sw/service/models"
 )
 
 type PassportService struct {
@@ -15,7 +15,7 @@ func NewPassportService(repo passportRepo) *PassportService {
 	}
 }
 
-func (p *PassportService) CreatePassport(ctx context.Context, passport entity.Passport) (int64, error) {
+func (p *PassportService) CreatePassport(ctx context.Context, passport models.Passport) (int64, error) {
 	passId, err := p.passportRepo.Create(ctx, passport)
 	switch {
 	case err == nil:
@@ -33,5 +33,6 @@ func (p *PassportService) DeletePassport(ctx context.Context, passportId int64) 
 	default:
 		return err
 	}
+
 	return nil
 }

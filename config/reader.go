@@ -9,12 +9,10 @@ import (
 func Read() Config {
 	env, configName := readEnv()
 
-	viper.SetConfigName(configName)  // name of config file (without extension)
-	viper.SetConfigType("json")      // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath("./.config") // path to look for the config file in
+	viper.SetConfigName(configName)
+	viper.SetConfigType("json")
+	viper.AddConfigPath("./.config")
 
-	// Find and read the config file
-	// Handle error reading the config file
 	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}

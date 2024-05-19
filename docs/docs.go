@@ -30,11 +30,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Данные пользователя",
-                        "name": "request",
+                        "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.createEmployeeRequest"
+                            "$ref": "#/definitions/test-task-sw_service_models.Employee"
                         }
                     }
                 ],
@@ -113,7 +113,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_listEmployeesByDepartmentResponse"
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-array_test-task-sw_service_models_Employee"
                         }
                     },
                     "400": {
@@ -156,7 +156,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_getListEmployeesByCompanyIdResponse"
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-array_test-task-sw_service_models_Employee"
                         }
                     },
                     "400": {
@@ -189,18 +189,18 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Идентификатор пользователя",
+                        "description": "Идентификатор работника",
                         "name": "employeeId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "da",
-                        "name": "request",
+                        "description": "Данные для обновления работника",
+                        "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.updateEmployeeRequest"
+                            "$ref": "#/definitions/test-task-sw_service_models.Employee"
                         }
                     }
                 ],
@@ -208,7 +208,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/thttp.ResponseWithDetails-handler_updateEmployeeResponse"
+                            "$ref": "#/definitions/thttp.ResponseWithDetails-test-task-sw_service_models_Employee"
                         }
                     },
                     "400": {
@@ -256,69 +256,25 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handler.createEmployeeRequest": {
+        "test-task-sw_service_models.Department": {
             "type": "object",
-            "required": [
-                "company_id",
-                "department_name",
-                "department_phone",
-                "id",
-                "name",
-                "passport_number",
-                "passport_type",
-                "phone",
-                "surname"
-            ],
             "properties": {
-                "company_id": {
-                    "type": "integer",
-                    "example": 1
-                },
                 "department_name": {
-                    "type": "string",
-                    "example": "First Department"
+                    "type": "string"
                 },
                 "department_phone": {
-                    "type": "string",
-                    "example": "+7(987)1112233"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Ivan"
-                },
-                "passport_number": {
-                    "type": "string",
-                    "example": "1122 112233"
-                },
-                "passport_type": {
-                    "type": "string",
-                    "example": "Russian passport"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+7(987)6667788"
-                },
-                "surname": {
-                    "type": "string",
-                    "example": "Ivanov"
+                    "type": "string"
                 }
             }
         },
-        "handler.getListEmployeesByCompanyIdElement": {
+        "test-task-sw_service_models.Employee": {
             "type": "object",
             "properties": {
                 "company_id": {
                     "type": "integer"
                 },
-                "department_name": {
-                    "type": "string"
-                },
-                "department_phone": {
-                    "type": "string"
+                "department": {
+                    "$ref": "#/definitions/test-task-sw_service_models.Department"
                 },
                 "id": {
                     "type": "integer"
@@ -326,11 +282,8 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "passport_number": {
-                    "type": "string"
-                },
-                "passport_type": {
-                    "type": "string"
+                "passport": {
+                    "$ref": "#/definitions/test-task-sw_service_models.Passport"
                 },
                 "phone": {
                     "type": "string"
@@ -340,95 +293,13 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.listEmployeesByDepartmentElement": {
+        "test-task-sw_service_models.Passport": {
             "type": "object",
             "properties": {
-                "company_id": {
-                    "type": "integer"
-                },
-                "department_name": {
-                    "type": "string"
-                },
-                "department_phone": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
                 "passport_number": {
                     "type": "string"
                 },
                 "passport_type": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "surname": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.updateEmployeeRequest": {
-            "type": "object",
-            "properties": {
-                "company_id": {
-                    "type": "integer"
-                },
-                "department_name": {
-                    "type": "string"
-                },
-                "department_phone": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "passport_number": {
-                    "type": "string"
-                },
-                "passport_type": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "surname": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.updateEmployeeResponse": {
-            "type": "object",
-            "properties": {
-                "company_id": {
-                    "type": "integer"
-                },
-                "department_name": {
-                    "type": "string"
-                },
-                "department_phone": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "passport_number": {
-                    "type": "string"
-                },
-                "passport_type": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "surname": {
                     "type": "string"
                 }
             }
@@ -463,7 +334,7 @@ const docTemplate = `{
                 "result": {}
             }
         },
-        "thttp.ResponseWithDetails-handler_getListEmployeesByCompanyIdResponse": {
+        "thttp.ResponseWithDetails-array_test-task-sw_service_models_Employee": {
             "type": "object",
             "properties": {
                 "description": {
@@ -478,45 +349,8 @@ const docTemplate = `{
                 "result": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/handler.getListEmployeesByCompanyIdElement"
+                        "$ref": "#/definitions/test-task-sw_service_models.Employee"
                     }
-                }
-            }
-        },
-        "thttp.ResponseWithDetails-handler_listEmployeesByDepartmentResponse": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "error_code": {
-                    "type": "integer"
-                },
-                "ok": {
-                    "type": "boolean"
-                },
-                "result": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/handler.listEmployeesByDepartmentElement"
-                    }
-                }
-            }
-        },
-        "thttp.ResponseWithDetails-handler_updateEmployeeResponse": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "error_code": {
-                    "type": "integer"
-                },
-                "ok": {
-                    "type": "boolean"
-                },
-                "result": {
-                    "$ref": "#/definitions/handler.updateEmployeeResponse"
                 }
             }
         },
@@ -534,6 +368,23 @@ const docTemplate = `{
                 },
                 "result": {
                     "type": "string"
+                }
+            }
+        },
+        "thttp.ResponseWithDetails-test-task-sw_service_models_Employee": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "error_code": {
+                    "type": "integer"
+                },
+                "ok": {
+                    "type": "boolean"
+                },
+                "result": {
+                    "$ref": "#/definitions/test-task-sw_service_models.Employee"
                 }
             }
         }

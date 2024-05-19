@@ -3,8 +3,8 @@ package passport
 import (
 	"context"
 	passqueries "test-task-sw/database/passport/queries"
-	"test-task-sw/entity"
 	"test-task-sw/lib/tpostgres"
+	"test-task-sw/service/models"
 )
 
 type PassportRepository struct {
@@ -17,14 +17,14 @@ func NewPassportRepository(db *tpostgres.Postgres) *PassportRepository {
 	}
 }
 
-func (p *PassportRepository) Create(ctx context.Context, passport entity.Passport) (int64, error) {
+func (p *PassportRepository) Create(ctx context.Context, passport models.Passport) (int64, error) {
 	passportData := []interface{}{
 		passport.Type,
 		passport.Number,
 	}
 
 	var passId int64
-	err := p.db.GetContext(ctx, &passId, passqueries.InsertPassportData, passportData...)
+	err := p.db.GetContext(ctx, &passId, passqueries.CreatePassport, passportData...)
 	if err != nil {
 		return 0, err
 	}
@@ -37,5 +37,6 @@ func (p *PassportRepository) Delete(ctx context.Context, passportId int64) error
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

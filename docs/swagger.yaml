@@ -1,124 +1,33 @@
 definitions:
-  handler.createEmployeeRequest:
+  test-task-sw_service_models.Department:
     properties:
-      company_id:
-        example: 1
-        type: integer
       department_name:
-        example: First Department
         type: string
       department_phone:
-        example: +7(987)1112233
         type: string
-      id:
-        example: 1
-        type: integer
-      name:
-        example: Ivan
-        type: string
-      passport_number:
-        example: 1122 112233
-        type: string
-      passport_type:
-        example: Russian passport
-        type: string
-      phone:
-        example: +7(987)6667788
-        type: string
-      surname:
-        example: Ivanov
-        type: string
-    required:
-    - company_id
-    - department_name
-    - department_phone
-    - id
-    - name
-    - passport_number
-    - passport_type
-    - phone
-    - surname
     type: object
-  handler.getListEmployeesByCompanyIdElement:
+  test-task-sw_service_models.Employee:
     properties:
       company_id:
         type: integer
-      department_name:
-        type: string
-      department_phone:
-        type: string
+      department:
+        $ref: '#/definitions/test-task-sw_service_models.Department'
       id:
         type: integer
       name:
         type: string
-      passport_number:
-        type: string
-      passport_type:
-        type: string
+      passport:
+        $ref: '#/definitions/test-task-sw_service_models.Passport'
       phone:
         type: string
       surname:
         type: string
     type: object
-  handler.listEmployeesByDepartmentElement:
+  test-task-sw_service_models.Passport:
     properties:
-      company_id:
-        type: integer
-      department_name:
-        type: string
-      department_phone:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
       passport_number:
         type: string
       passport_type:
-        type: string
-      phone:
-        type: string
-      surname:
-        type: string
-    type: object
-  handler.updateEmployeeRequest:
-    properties:
-      company_id:
-        type: integer
-      department_name:
-        type: string
-      department_phone:
-        type: string
-      name:
-        type: string
-      passport_number:
-        type: string
-      passport_type:
-        type: string
-      phone:
-        type: string
-      surname:
-        type: string
-    type: object
-  handler.updateEmployeeResponse:
-    properties:
-      company_id:
-        type: integer
-      department_name:
-        type: string
-      department_phone:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      passport_number:
-        type: string
-      passport_type:
-        type: string
-      phone:
-        type: string
-      surname:
         type: string
     type: object
   thttp.ResponseError:
@@ -141,7 +50,7 @@ definitions:
         type: boolean
       result: {}
     type: object
-  thttp.ResponseWithDetails-handler_getListEmployeesByCompanyIdResponse:
+  thttp.ResponseWithDetails-array_test-task-sw_service_models_Employee:
     properties:
       description:
         type: string
@@ -151,32 +60,8 @@ definitions:
         type: boolean
       result:
         items:
-          $ref: '#/definitions/handler.getListEmployeesByCompanyIdElement'
+          $ref: '#/definitions/test-task-sw_service_models.Employee'
         type: array
-    type: object
-  thttp.ResponseWithDetails-handler_listEmployeesByDepartmentResponse:
-    properties:
-      description:
-        type: string
-      error_code:
-        type: integer
-      ok:
-        type: boolean
-      result:
-        items:
-          $ref: '#/definitions/handler.listEmployeesByDepartmentElement'
-        type: array
-    type: object
-  thttp.ResponseWithDetails-handler_updateEmployeeResponse:
-    properties:
-      description:
-        type: string
-      error_code:
-        type: integer
-      ok:
-        type: boolean
-      result:
-        $ref: '#/definitions/handler.updateEmployeeResponse'
     type: object
   thttp.ResponseWithDetails-string:
     properties:
@@ -188,6 +73,17 @@ definitions:
         type: boolean
       result:
         type: string
+    type: object
+  thttp.ResponseWithDetails-test-task-sw_service_models_Employee:
+    properties:
+      description:
+        type: string
+      error_code:
+        type: integer
+      ok:
+        type: boolean
+      result:
+        $ref: '#/definitions/test-task-sw_service_models.Employee'
     type: object
 info:
   contact: {}
@@ -202,10 +98,10 @@ paths:
       parameters:
       - description: Данные пользователя
         in: body
-        name: request
+        name: input
         required: true
         schema:
-          $ref: '#/definitions/handler.createEmployeeRequest'
+          $ref: '#/definitions/test-task-sw_service_models.Employee'
       produces:
       - application/json
       responses:
@@ -258,7 +154,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/thttp.ResponseWithDetails-handler_getListEmployeesByCompanyIdResponse'
+            $ref: '#/definitions/thttp.ResponseWithDetails-array_test-task-sw_service_models_Employee'
         "400":
           description: Bad request
           schema:
@@ -286,7 +182,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/thttp.ResponseWithDetails-handler_listEmployeesByDepartmentResponse'
+            $ref: '#/definitions/thttp.ResponseWithDetails-array_test-task-sw_service_models_Employee'
         "400":
           description: Bad request
           schema:
@@ -303,24 +199,24 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Идентификатор пользователя
+      - description: Идентификатор работника
         in: path
         name: employeeId
         required: true
         type: string
-      - description: da
+      - description: Данные для обновления работника
         in: body
-        name: request
+        name: input
         required: true
         schema:
-          $ref: '#/definitions/handler.updateEmployeeRequest'
+          $ref: '#/definitions/test-task-sw_service_models.Employee'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/thttp.ResponseWithDetails-handler_updateEmployeeResponse'
+            $ref: '#/definitions/thttp.ResponseWithDetails-test-task-sw_service_models_Employee'
         "400":
           description: Bad request
           schema:
