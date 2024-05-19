@@ -13,6 +13,7 @@ import (
 	"test-task-sw/api/handler"
 	_ "test-task-sw/docs"
 	"test-task-sw/lib/tctx"
+	"test-task-sw/service"
 	"time"
 )
 
@@ -30,7 +31,9 @@ func NewServer(
 	port int,
 	logger *zap.SugaredLogger,
 	contextProvider tctx.DefaultContextProviderFunc,
-	// userService *service.UserService,
+	employeeService *service.EmployeeService,
+	passportService *service.PassportService,
+	departmentService *service.DepartmentService,
 ) *Server {
 	r := gin.New()
 
@@ -45,6 +48,15 @@ func NewServer(
 		serviceGroup := apiGroup.Group("/")
 		{
 			serviceGroup.GET("/ping", handler.Ping())
+		}
+
+		employeeGroup := apiGroup.Group("/employee")
+		{
+			employeeGroup.POST("create", handler.CreateEmployee(logger, employeeService))
+			employeeGroup.DELETE("delete/:employeeId", handler.DeleteEmployee(logger, employeeService))
+			employeeGroup.GET("list/:companyId", handler.ListEmployeesByCompanyId(logger, employeeService))
+			employeeGroup.GET("list/department/:depName", handler.ListEmployeesByDepartment(logger, employeeService))
+			employeeGroup.PUT("update/:employeeId", handler.UpdateEmployee(logger, employeeService))
 		}
 	}
 	return &Server{

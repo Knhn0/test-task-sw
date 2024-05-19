@@ -8,8 +8,12 @@ import (
 	"net/http"
 	"test-task-sw/api"
 	"test-task-sw/config"
+	"test-task-sw/database/department"
+	"test-task-sw/database/employee"
+	"test-task-sw/database/passport"
 	"test-task-sw/lib/tctx"
 	"test-task-sw/lib/tpostgres"
+	"test-task-sw/service"
 )
 
 type App struct {
@@ -21,6 +25,16 @@ type App struct {
 
 	//db
 	pgDb *tpostgres.Postgres
+
+	//repos
+	employeeRepo   *employee.EmployeeRepository
+	passportRepo   *passport.PassportRepository
+	departmentRepo *department.DepartmentRepository
+
+	//services
+	employeeService   *service.EmployeeService
+	passportService   *service.PassportService
+	departmentService *service.DepartmentService
 }
 
 func NewApp(logger *zap.SugaredLogger, cfg config.Config, contextProvider tctx.DefaultContextProviderFunc) (*App, error) {
@@ -55,16 +69,26 @@ func (a *App) initDatabases() error {
 	}
 
 	// Repos
+	a.employeeRepo = employee.NewUserRepository(a.pgDb)
+	a.passportRepo = passport.NewPassportRepository(a.pgDb)
+	a.departmentRepo = department.NewDepartmentRepository(a.pgDb)
 
 	return nil
 }
 
 func (a *App) initServices() error {
 
+	a.passportService = service.NewPassportService(a.passportRepo)
+	a.departmentService = service.NewDepartmentService(a.departmentRepo)
+	a.employeeService = service.NewUserService(a.employeeRepo, a.departmentService, a.passportService)
+
 	a.Server = api.NewServer(
 		a.config.Port,
 		a.logger,
 		a.contextProvider,
+		a.employeeService,
+		a.passportService,
+		a.departmentService,
 	)
 
 	return nil
