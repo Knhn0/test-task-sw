@@ -12,52 +12,24 @@ import (
 	"test-task-sw/service"
 )
 
-type createEmployeeRequest struct {
-	Id              int    `json:"id" binding:"required" example:"1"`
-	Name            string `json:"name" binding:"required" example:"Ivan"`
-	Surname         string `json:"surname" binding:"required" example:"Ivanov"`
-	Phone           string `json:"phone" binding:"required" example:"+7(987)6667788"`
-	CompanyId       int    `json:"company_id" binding:"required" example:"1"`
-	PassportType    string `json:"passport_type" binding:"required" example:"Russian passport"`
-	PassportNumber  string `json:"passport_number" binding:"required" example:"1122 112233"`
-	DepartmentName  string `json:"department_name" binding:"required" example:"First Department"`
-	DepartmentPhone string `json:"department_phone" binding:"required" example:"+7(987)1112233"`
-}
-
 // CreateEmployee godoc
 // @Summary     Создание работника
 // @Tags		Employee
 // @Accept      json
 // @Produce     json
-// @Param       request body createEmployeeRequest true "Данные пользователя"
+// @Param       request body /service/models/employee.Employee true "Данные пользователя"
 // @Success     200
 // @Router      /api/employee/create [post]
 func CreateEmployee(logger *zap.SugaredLogger, employeeService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var req createEmployeeRequest
+		var req entity.Employee
 		if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
 			logger.Error(err.Error())
 			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
-		employee := entity.Employee{
-			Id:        req.Id,
-			Name:      req.Name,
-			Surname:   req.Surname,
-			Phone:     req.Phone,
-			CompanyId: req.CompanyId,
-			Passport: entity.Passport{
-				Type:   req.PassportType,
-				Number: req.PassportNumber,
-			},
-			Department: entity.Department{
-				Name:  req.DepartmentName,
-				Phone: req.DepartmentPhone,
-			},
-		}
-
-		id, err := employeeService.Create(c, employee)
+		id, err := employeeService.Create(c, req)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrAlreadyExists):
