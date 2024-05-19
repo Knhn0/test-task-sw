@@ -349,7 +349,7 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 			},
 		}
 
-		_, err = employeeService.UpdateEmployee(c, employeeId, employee)
+		err = employeeService.UpdateEmployee(c, employeeId, employee)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):

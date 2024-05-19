@@ -144,26 +144,25 @@ func (e *EmployeeService) isEmployeeExists(ctx context.Context, employeeId int64
 	return true, nil
 }
 
-func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int64, updEmployee entity.Employee) (entity.Employee, error) {
-	//filteredData := e.filterJSON(updEmployee)
+func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int64, updEmployee entity.Employee) error {
+
 	lastDbModel, err := e.employeeRepo.Get(ctx, employeeId)
 	if err != nil {
-		return entity.Employee{}, err
+		return err
 	}
 
 	lastDbModel.PartialUpdate(updEmployee)
 	err = e.employeeRepo.UpdateEmployee(ctx, employeeId, lastDbModel)
-	//updatedEmployee, err := e.employeeRepo.UpdateEmployee(ctx, employeeId, filteredData)
+
 	switch {
 	case err == nil:
 	case errors.Is(err, sql.ErrNoRows):
-		return entity.Employee{}, nil
+		return nil
 	default:
-		return entity.Employee{}, err
+		return err
 	}
 
-	//return updatedEmployee, nil
-	return entity.Employee{}, nil
+	return nil
 }
 
 func (e *EmployeeService) filterJSON(data map[string]interface{}) map[string]interface{} {
