@@ -5,10 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: props-api
+    container_name: test-task-sw
     restart: unless-stopped
     environment:
-      ENV: test
+      ENV: local
     depends_on:
       - postgres
     ports:
