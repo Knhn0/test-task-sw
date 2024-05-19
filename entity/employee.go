@@ -31,3 +31,21 @@ type EmployeeForList struct {
 	DepartmentName  string
 	DepartmentPhone string
 }
+
+func (e *Employee) PartialUpdate(updateModel Employee) {
+	if len(updateModel.Name) != 0 {
+		e.Name = updateModel.Name
+	}
+	if len(updateModel.Surname) != 0 {
+		e.Surname = updateModel.Surname
+	}
+	if len(updateModel.Phone) != 0 {
+		e.Phone = updateModel.Phone
+	}
+	if updateModel.CompanyId != 0 {
+		e.CompanyId = updateModel.CompanyId
+	}
+
+	e.Passport.PartialUpdate(updateModel.Passport)
+	e.Department.PartialUpdate(updateModel.Department)
+}

@@ -19,7 +19,7 @@ func NewUserRepository(db *tpostgres.Postgres) *EmployeeRepository {
 	}
 }
 
-func (e *EmployeeRepository) GetEmployee(ctx context.Context, employeeId int64) (entity.EmployeeTransfer, error) {
+func (e *EmployeeRepository) getEmployee(ctx context.Context, employeeId int64) (entity.EmployeeTransfer, error) {
 	var employeeModel models.Employee
 	if err := e.db.GetContext(ctx, &employeeModel, query.GetEmployee, employeeId); err != nil {
 		return entity.EmployeeTransfer{}, err
@@ -46,7 +46,7 @@ func (e *EmployeeRepository) Create(ctx context.Context, employee entity.Employe
 }
 
 func (e *EmployeeRepository) Delete(ctx context.Context, employeeId int64) error {
-	employee, err := e.GetEmployee(ctx, employeeId)
+	employee, err := e.getEmployee(ctx, employeeId)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (e *EmployeeRepository) Delete(ctx context.Context, employeeId int64) error
 }
 
 func (e *EmployeeRepository) GetListByCompanyId(ctx context.Context, companyId int) ([]entity.Employee, error) {
-	var employeeModel []models.EmployeeForList
+	var employeeModel []models.Employee
 	if err := e.db.SelectContext(ctx, &employeeModel, query.GetListByCompanyId, companyId); err != nil {
 		return nil, err
 	}
@@ -67,17 +67,60 @@ func (e *EmployeeRepository) GetListByCompanyId(ctx context.Context, companyId i
 }
 
 func (e *EmployeeRepository) GetListByDepartmentName(ctx context.Context, depName string) ([]entity.Employee, error) {
-	var employeeModel []models.EmployeeForList
+	var employeeModel []models.Employee
 	if err := e.db.SelectContext(ctx, &employeeModel, query.GetListEmployeesByDepName, depName); err != nil {
 		return nil, err
 	}
 	return mapper.EmployeesSlice(employeeModel), nil
 }
 
-func (e *EmployeeRepository) UpdateEmployee(ctx context.Context, employeeId int, employee map[string]interface{}) (entity.Employee, error) {
-	updatedEmployee, err := e.db.ExecContext(ctx, query.UpdateEmploye, employeeId, employee)
-	if err != nil {
+func (e *EmployeeRepository) Get(ctx context.Context, employeeId int64) (entity.Employee, error) {
+	var employeeModel models.Employee
+	if err := e.db.GetContext(ctx, &employeeModel, query.GetEmployee, employeeId); err != nil {
 		return entity.Employee{}, err
 	}
-	return mapper.MapEmployeeForList(updatedEmployee), nil
+	return mapper.MapEmployee(employeeModel), nil
+}
+
+func (e *EmployeeRepository) UpdateEmployee(ctx context.Context, employeeId int64, employee entity.Employee) error {
+	tx, err := e.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	var passId int
+	var depId int
+
+	err = tx.QueryRowContext(ctx, query.UpdateEmployee, employeeId, employee.Name, employee.Surname, employee.Phone, employee.CompanyId).Scan(&passId, &depId)
+	if err != nil {
+		return err
+	}
+
+	argsForPassport := []interface{}{
+		passId,
+		employee.Passport.Type,
+		employee.Passport.Number,
+	}
+	_, err = tx.ExecContext(ctx, query.UpdatePassport, argsForPassport...)
+	if err != nil {
+		return err
+	}
+
+	argsForDepartment := []interface{}{
+		depId,
+		employee.Department.Name,
+		employee.Department.Phone,
+	}
+	_, err = tx.ExecContext(ctx, query.UpdateDepartment, argsForDepartment...)
+	if err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }

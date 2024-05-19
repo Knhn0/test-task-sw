@@ -6,12 +6,13 @@ import (
 )
 
 type employeeRepo interface {
-	GetEmployee(ctx context.Context, employeeId int64) (entity.EmployeeTransfer, error)
+	//GetEmployee(ctx context.Context, employeeId int64) (entity.EmployeeTransfer, error)
 	Create(ctx context.Context, employee entity.Employee, passId int64, depId int64) (int64, error)
 	Delete(ctx context.Context, employeeId int64) error
 	GetListByCompanyId(ctx context.Context, companyId int) ([]entity.Employee, error)
 	GetListByDepartmentName(ctx context.Context, depName string) ([]entity.Employee, error)
-	UpdateEmployee(ctx context.Context, employeeId int, employee map[string]interface{}) (entity.Employee, error)
+	UpdateEmployee(ctx context.Context, employeeId int64, employee entity.Employee) error
+	Get(ctx context.Context, employeeId int64) (entity.Employee, error)
 }
 
 type passportRepo interface {

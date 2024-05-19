@@ -31,21 +31,6 @@ create table if not exists "employees"
     department_id int not null references departments(id) on delete cascade
 );
 
-create temp table if not exists "employees_passports_dep"
-(
-  employee_id int,
-  employee_name varchar(255) not null,
-  surname varchar(255) not null,
-  phone varchar(255) not null,
-  company_id int not null,
-  passport_id int not null,
-  passport_type varchar(255) not null,
-  passport_number varchar(255) not null,
-  department_id int not null,
-  department_name varchar(255) not null,
-  department_phone varchar(255) not null
-);
-
 -- +goose Down
 drop extension if exists "pg_trgm";
 drop extension if exists "uuid-ossp";

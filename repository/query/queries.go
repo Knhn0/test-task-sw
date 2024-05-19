@@ -30,4 +30,10 @@ var GetListByCompanyId string
 var GetListEmployeesByDepName string
 
 //go:embed update_employee.sql
-var UpdateEmploye string
+var UpdateEmployee string
+
+//go:embed update_passport.sql
+var UpdatePassport string
+
+//go:embed update_department.sql
+var UpdateDepartment string

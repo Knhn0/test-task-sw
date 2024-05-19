@@ -5,6 +5,7 @@ import (
 	"test-task-sw/repository/models"
 )
 
+// need check
 func EmployeeTransferMapFromDb(employee models.Employee) entity.EmployeeTransfer {
 	return entity.EmployeeTransfer{
 		Id:           employee.Id,
@@ -17,7 +18,7 @@ func EmployeeTransferMapFromDb(employee models.Employee) entity.EmployeeTransfer
 	}
 }
 
-func MapEmployeeForList(employee models.EmployeeForList) entity.Employee {
+func MapEmployee(employee models.Employee) entity.Employee {
 	return entity.Employee{
 		Id:        employee.Id,
 		Name:      employee.Name,
@@ -35,10 +36,10 @@ func MapEmployeeForList(employee models.EmployeeForList) entity.Employee {
 	}
 }
 
-func EmployeesSlice(employeeModels []models.EmployeeForList) []entity.Employee {
+func EmployeesSlice(employeeModels []models.Employee) []entity.Employee {
 	var employees = make([]entity.Employee, 0, len(employeeModels))
 	for _, employee := range employeeModels {
-		employees = append(employees, MapEmployeeForList(employee))
+		employees = append(employees, MapEmployee(employee))
 	}
 	return employees
 }

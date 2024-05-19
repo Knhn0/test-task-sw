@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
@@ -264,7 +263,7 @@ func ListEmployeesByDepartment(logger *zap.SugaredLogger, employeeService *servi
 }
 
 type updateEmployeeUri struct {
-	employeeId string `uri:"employeeId"`
+	EmployeeId string `uri:"employeeId"`
 }
 
 type updateEmployeeRequest struct {
@@ -330,27 +329,32 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 			return
 		}
 
-		jsonData, _ := json.Marshal(req)
-		var data map[string]any
-		err := json.Unmarshal(jsonData, &data)
+		employeeId, err := strconv.ParseInt(id.EmployeeId, 10, 64)
 		if err != nil {
 			return
 		}
 
-		//employeeId, _ := strconv.Atoi(id.employeeId)
-		fmt.Println(id.employeeId)
+		employee := entity.Employee{
+			Name:      req.Name,
+			Surname:   req.Surname,
+			Phone:     req.Phone,
+			CompanyId: *req.CompanyId,
+			Passport: entity.Passport{
+				Type:   req.PassportType,
+				Number: req.PassportNumber,
+			},
+			Department: entity.Department{
+				Name:  req.DepartmentName,
+				Phone: req.DepartmentPhone,
+			},
+		}
 
-		updatedEmployee, err := employeeService.UpdateEmployee(c, 1, data)
-
+		_, err = employeeService.UpdateEmployee(c, employeeId, employee)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
 			logger.Error(err.Error())
 			thttp.ErrorResponse(c, http.StatusNotFound, service.ErrNotFound.Error())
-			return
-		case errors.Is(err, service.ErrAlreadyExists):
-			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusConflict, service.ErrAlreadyExists.Error())
 			return
 		default:
 			logger.Error(err.Error())
@@ -359,6 +363,6 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 		}
 
 		//response :=
-		thttp.OkResponseWithResult(c, updatedEmployee)
+		thttp.OkResponse(c)
 	}
 }

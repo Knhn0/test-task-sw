@@ -67,14 +67,14 @@ func (e *EmployeeService) Create(ctx context.Context, employee entity.Employee) 
 	return employeeId, nil
 }
 
-func (e *EmployeeService) GetEmployee(ctx context.Context, employeeId int64) (entity.EmployeeTransfer, error) {
-	employee, err := e.employeeRepo.GetEmployee(ctx, employeeId)
+func (e *EmployeeService) GetEmployee(ctx context.Context, employeeId int64) (entity.Employee, error) {
+	employee, err := e.employeeRepo.Get(ctx, employeeId)
 	switch {
 	case err == nil:
 	case errors.Is(err, sql.ErrNoRows):
-		return entity.EmployeeTransfer{}, ErrNotFound
+		return entity.Employee{}, ErrNotFound
 	default:
-		return entity.EmployeeTransfer{}, err
+		return entity.Employee{}, err
 	}
 	return employee, nil
 }
@@ -131,7 +131,7 @@ func (e *EmployeeService) GetEmployeeListByDepartmentName(ctx context.Context, d
 
 func (e *EmployeeService) isEmployeeExists(ctx context.Context, employeeId int64) (bool, error) {
 
-	_, err := e.employeeRepo.GetEmployee(ctx, employeeId)
+	_, err := e.employeeRepo.Get(ctx, employeeId)
 
 	switch {
 	case err == nil:
@@ -144,9 +144,16 @@ func (e *EmployeeService) isEmployeeExists(ctx context.Context, employeeId int64
 	return true, nil
 }
 
-func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int, updEmployee map[string]interface{}) (entity.Employee, error) {
-	filteredData := e.filterJSON(updEmployee)
-	updatedEmployee, err := e.employeeRepo.UpdateEmployee(ctx, employeeId, filteredData)
+func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int64, updEmployee entity.Employee) (entity.Employee, error) {
+	//filteredData := e.filterJSON(updEmployee)
+	lastDbModel, err := e.employeeRepo.Get(ctx, employeeId)
+	if err != nil {
+		return entity.Employee{}, err
+	}
+
+	lastDbModel.PartialUpdate(updEmployee)
+	err = e.employeeRepo.UpdateEmployee(ctx, employeeId, lastDbModel)
+	//updatedEmployee, err := e.employeeRepo.UpdateEmployee(ctx, employeeId, filteredData)
 	switch {
 	case err == nil:
 	case errors.Is(err, sql.ErrNoRows):
@@ -155,7 +162,8 @@ func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int, up
 		return entity.Employee{}, err
 	}
 
-	return updatedEmployee, nil
+	//return updatedEmployee, nil
+	return entity.Employee{}, nil
 }
 
 func (e *EmployeeService) filterJSON(data map[string]interface{}) map[string]interface{} {
