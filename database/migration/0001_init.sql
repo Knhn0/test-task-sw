@@ -2,9 +2,8 @@
 
 -- Extensions
 create extension if not exists "pg_trgm";
-create extension if not exists "uuid-ossp";
 
--- Users
+-- Employees
 
 create table if not exists "passports"
 (
@@ -33,7 +32,6 @@ create table if not exists "employees"
 
 -- +goose Down
 drop extension if exists "pg_trgm";
-drop extension if exists "uuid-ossp";
-drop extension if exists "users";
+drop extension if exists "employees";
 drop extension if exists "passsports";
 drop extension if exists "departments";
