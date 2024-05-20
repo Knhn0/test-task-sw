@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	_defaultShutdownTimeout = 3 * time.Second
+	defaultShutdownTimeout = 3 * time.Second
 )
 
 type Server struct {
@@ -32,8 +32,6 @@ func NewServer(
 	logger *zap.SugaredLogger,
 	contextProvider tctx.DefaultContextProviderFunc,
 	employeeService *service.EmployeeService,
-	passportService *service.PassportService,
-	departmentService *service.DepartmentService,
 ) *Server {
 	r := gin.New()
 
@@ -54,7 +52,7 @@ func NewServer(
 		{
 			employeeGroup.POST("create", handler.CreateEmployee(logger, employeeService))
 			employeeGroup.DELETE("delete/:employeeId", handler.DeleteEmployee(logger, employeeService))
-			employeeGroup.GET("list/:companyId", handler.ListEmployeesByCompanyId(logger, employeeService))
+			employeeGroup.GET("list/company/:companyId", handler.ListEmployeesByCompanyId(logger, employeeService))
 			employeeGroup.GET("list/department/:depName", handler.ListEmployeesByDepartment(logger, employeeService))
 			employeeGroup.PUT("update/:employeeId", handler.UpdateEmployee(logger, employeeService))
 		}
@@ -67,7 +65,7 @@ func NewServer(
 				return contextProvider()
 			},
 		},
-		shutdownTimeout: _defaultShutdownTimeout,
+		shutdownTimeout: defaultShutdownTimeout,
 	}
 }
 

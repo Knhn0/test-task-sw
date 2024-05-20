@@ -8,11 +8,11 @@ services:
     container_name: test-task-sw
     restart: unless-stopped
     environment:
-      ENV: local
+      ENV: prod
     depends_on:
       - postgres
     ports:
-      - "5743:80"
+      - "80:80"
 
   postgres:
     image: postgres:16.0

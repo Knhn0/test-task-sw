@@ -2,29 +2,32 @@ package passport
 
 import (
 	"context"
+	"database/sql"
 	passqueries "test-task-sw/database/passport/queries"
 	"test-task-sw/lib/tpostgres"
 	"test-task-sw/service/models"
 )
 
-type PassportRepository struct {
+type Repo interface {
+	Create(ctx context.Context, tx *sql.Tx, passport models.Passport) (int64, error)
+	Delete(ctx context.Context, tx *sql.Tx, passportId int64) error
+	Update(ctx context.Context, tx *sql.Tx, passportId int64, passport models.Passport) error
+}
+
+type Impl struct {
 	db *tpostgres.Postgres
 }
 
-func NewPassportRepository(db *tpostgres.Postgres) *PassportRepository {
-	return &PassportRepository{
+func NewRepository(db *tpostgres.Postgres) Repo {
+	return &Impl{
 		db: db,
 	}
 }
 
-func (p *PassportRepository) Create(ctx context.Context, passport models.Passport) (int64, error) {
-	passportData := []interface{}{
-		passport.Type,
-		passport.Number,
-	}
-
+func (p *Impl) Create(ctx context.Context, tx *sql.Tx, passport models.Passport) (int64, error) {
 	var passId int64
-	err := p.db.GetContext(ctx, &passId, passqueries.CreatePassport, passportData...)
+
+	err := tx.QueryRowContext(ctx, passqueries.CreatePassport, passport.Type, passport.Number).Scan(&passId)
 	if err != nil {
 		return 0, err
 	}
@@ -32,11 +35,12 @@ func (p *PassportRepository) Create(ctx context.Context, passport models.Passpor
 	return passId, nil
 }
 
-func (p *PassportRepository) Delete(ctx context.Context, passportId int64) error {
-	_, err := p.db.ExecContext(ctx, passqueries.DeletePassport, passportId)
-	if err != nil {
-		return err
-	}
+func (p *Impl) Delete(ctx context.Context, tx *sql.Tx, passportId int64) error {
+	_, err := tx.ExecContext(ctx, passqueries.DeletePassport, passportId)
+	return err
+}
 
-	return nil
+func (p *Impl) Update(ctx context.Context, tx *sql.Tx, passportId int64, passport models.Passport) error {
+	_, err := tx.ExecContext(ctx, passqueries.UpdatePassport, passportId, passport.Type, passport.Number)
+	return err
 }

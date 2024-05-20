@@ -88,7 +88,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/employee/list/department/{depName}": {
+        "/api/employee/list/company/{companyId}": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -97,14 +97,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Employees"
+                    "Employee"
                 ],
-                "summary": "Получение работников по отделу",
+                "summary": "Получение работников по id компании",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Название отдела",
-                        "name": "depName",
+                        "description": "Идентификатор компании",
+                        "name": "companyId",
                         "in": "path",
                         "required": true
                     }
@@ -131,7 +131,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/employee/list/{companyId}": {
+        "/api/employee/list/department/{depName}": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -140,14 +140,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Employee"
+                    "Employees"
                 ],
-                "summary": "Получение работников по id компании",
+                "summary": "Получение работников по отделу",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Идентификатор компании",
-                        "name": "companyId",
+                        "description": "Название отдела",
+                        "name": "depName",
                         "in": "path",
                         "required": true
                     }

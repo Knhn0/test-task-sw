@@ -27,14 +27,12 @@ type App struct {
 	pgDb *tpostgres.Postgres
 
 	//repos
-	employeeRepo   *employee.EmployeeRepository
-	passportRepo   *passport.PassportRepository
-	departmentRepo *department.DepartmentRepository
+	passportRepo   passport.Repo
+	departmentRepo department.Repo
+	employeeRepo   employee.Repo
 
 	//services
-	employeeService   *service.EmployeeService
-	passportService   *service.PassportService
-	departmentService *service.DepartmentService
+	employeeService *service.EmployeeService
 }
 
 func NewApp(logger *zap.SugaredLogger, cfg config.Config, contextProvider tctx.DefaultContextProviderFunc) (*App, error) {
@@ -69,26 +67,22 @@ func (a *App) initDatabases() error {
 	}
 
 	// Repos
-	a.employeeRepo = employee.NewUserRepository(a.pgDb)
-	a.passportRepo = passport.NewPassportRepository(a.pgDb)
-	a.departmentRepo = department.NewDepartmentRepository(a.pgDb)
+	a.passportRepo = passport.NewRepository(a.pgDb)
+	a.departmentRepo = department.NewRepository(a.pgDb)
+	a.employeeRepo = employee.NewRepository(a.pgDb, a.passportRepo, a.departmentRepo)
 
 	return nil
 }
 
 func (a *App) initServices() error {
 
-	a.passportService = service.NewPassportService(a.passportRepo)
-	a.departmentService = service.NewDepartmentService(a.departmentRepo)
-	a.employeeService = service.NewUserService(a.employeeRepo, a.departmentService, a.passportService)
+	a.employeeService = service.NewUserService(a.employeeRepo, a.passportRepo, a.departmentRepo)
 
 	a.Server = api.NewServer(
 		a.config.Port,
 		a.logger,
 		a.contextProvider,
 		a.employeeService,
-		a.passportService,
-		a.departmentService,
 	)
 
 	return nil

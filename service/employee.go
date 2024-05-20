@@ -4,20 +4,23 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"test-task-sw/database/department"
+	"test-task-sw/database/employee"
+	"test-task-sw/database/passport"
 	"test-task-sw/service/models"
 )
 
 type EmployeeService struct {
-	passportService   *PassportService
-	departmentService *DepartmentService
-	employeeRepo      employeeRepo
+	employeeRepo   employee.Repo
+	passportRepo   passport.Repo
+	departmentRepo department.Repo
 }
 
-func NewUserService(repo employeeRepo, depServ *DepartmentService, passServ *PassportService) *EmployeeService {
+func NewUserService(repo employee.Repo, passportRepo passport.Repo, departmentRepo department.Repo) *EmployeeService {
 	return &EmployeeService{
-		passServ,
-		depServ,
 		repo,
+		passportRepo,
+		departmentRepo,
 	}
 }
 
@@ -70,12 +73,9 @@ func (e *EmployeeService) DeleteEmployee(ctx context.Context, employeeId int64) 
 }
 
 func (e *EmployeeService) GetEmployeeListByCompanyId(ctx context.Context, companyId int) ([]models.Employee, error) {
-	// нужно добавить ifExists
 	employees, err := e.employeeRepo.GetListByCompanyId(ctx, companyId)
 	switch {
 	case err == nil:
-	case errors.Is(err, sql.ErrNoRows):
-		return []models.Employee{}, ErrNotFound
 	default:
 		return []models.Employee{}, err
 	}
@@ -85,13 +85,8 @@ func (e *EmployeeService) GetEmployeeListByCompanyId(ctx context.Context, compan
 
 func (e *EmployeeService) GetEmployeeListByDepartmentName(ctx context.Context, departmentName string) ([]models.Employee, error) {
 	employees, err := e.employeeRepo.GetListByDepartmentName(ctx, departmentName)
-	if len(employees) == 0 {
-		return []models.Employee{}, ErrNotFound
-	}
 	switch {
 	case err == nil:
-	case errors.Is(err, sql.ErrNoRows):
-		return []models.Employee{}, ErrNotFound
 	default:
 		return []models.Employee{}, err
 	}
@@ -122,7 +117,7 @@ func (e *EmployeeService) UpdateEmployee(ctx context.Context, employeeId int64, 
 	}
 
 	lastDbModel.PartialUpdate(updEmployee)
-	err = e.employeeRepo.UpdateEmployee(ctx, employeeId, lastDbModel)
+	err = e.employeeRepo.Update(ctx, employeeId, lastDbModel)
 
 	switch {
 	case err == nil:

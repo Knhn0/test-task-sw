@@ -25,27 +25,28 @@ func CreateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 		var req models.Employee
 		if err := json.NewDecoder(c.Request.Body).Decode(&req); err != nil {
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
+			thttp.SendErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
-		if req.Validate() == false {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "Ошибка валидации")
+		if !req.Validate() {
+			thttp.SendErrorResponse(c, http.StatusBadRequest, "validation error")
+			return
 		}
 
 		id, err := employeeService.Create(c, req)
 		switch {
 		case err == nil:
 		case errors.Is(err, service.ErrAlreadyExists):
-			thttp.ErrorResponse(c, http.StatusUnauthorized, "Пользователь уже существует")
+			thttp.SendErrorResponse(c, http.StatusUnauthorized, "employee not found")
 			return
 		default:
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+			thttp.SendErrorResponse(c, http.StatusInternalServerError, "internal server error")
 			return
 		}
 
-		thttp.OkResponseWithResult(c, id)
+		thttp.SendOkResponse(c, id)
 		return
 	}
 }
@@ -68,7 +69,7 @@ func DeleteEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 	return func(c *gin.Context) {
 		var req deleteEmployeeUri
 		if err := c.ShouldBindUri(&req); err != nil {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
+			thttp.SendErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
@@ -82,14 +83,14 @@ func DeleteEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, "Пользователь не существует")
+			thttp.SendErrorResponse(c, http.StatusNotFound, "employee not found")
 			return
 		default:
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+			thttp.SendErrorResponse(c, http.StatusInternalServerError, "internal server error")
 		}
 
-		thttp.OkResponse(c)
+		thttp.SendOkResponse(c, nil)
 	}
 }
 
@@ -106,12 +107,12 @@ type getListEmployeesByCompanyIdUri struct {
 // @Success     200 {object} thttp.ResponseWithDetails[[]models.Employee]
 // @Failure     400 {object} thttp.ResponseError "Bad request"
 // @Failure     500 {object} thttp.ResponseError "Internal server error"
-// @Router      /api/employee/list/{companyId} [get]
+// @Router      /api/employee/list/company/{companyId} [get]
 func ListEmployeesByCompanyId(logger *zap.SugaredLogger, employeeService *service.EmployeeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req getListEmployeesByCompanyIdUri
 		if err := c.ShouldBindUri(&req); err != nil {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
+			thttp.SendErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
@@ -120,17 +121,13 @@ func ListEmployeesByCompanyId(logger *zap.SugaredLogger, employeeService *servic
 		employees, err := employeeService.GetEmployeeListByCompanyId(c, companyId)
 		switch {
 		case err == nil:
-		case errors.Is(err, service.ErrNotFound):
-			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, "Работники не найдены")
-			return
 		default:
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal  server error")
+			thttp.SendErrorResponse(c, http.StatusInternalServerError, "internal  server error")
 			return
 		}
 
-		thttp.OkResponseWithResult(c, employees)
+		thttp.SendOkResponse(c, employees)
 	}
 }
 
@@ -152,24 +149,20 @@ func ListEmployeesByDepartment(logger *zap.SugaredLogger, employeeService *servi
 	return func(c *gin.Context) {
 		var req listEmployeesByDepartmentUri
 		if err := c.ShouldBindUri(&req); err != nil {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
+			thttp.SendErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
 		employees, err := employeeService.GetEmployeeListByDepartmentName(c, req.DepName)
 		switch {
 		case err == nil:
-		case errors.Is(err, service.ErrNotFound):
-			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, "Работники не найдены")
-			return
 		default:
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal  server error")
+			thttp.SendErrorResponse(c, http.StatusInternalServerError, "internal  server error")
 			return
 		}
 
-		thttp.OkResponseWithResult(c, employees)
+		thttp.SendOkResponse(c, employees)
 	}
 }
 
@@ -193,18 +186,18 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 	return func(c *gin.Context) {
 		var id updateEmployeeUri
 		if err := c.ShouldBindUri(&id); err != nil {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
+			thttp.SendErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
 		var req models.Employee
 		if err := c.ShouldBindJSON(&req); err != nil {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "bad body")
+			thttp.SendErrorResponse(c, http.StatusBadRequest, "bad body")
 			return
 		}
 
-		if req.Validate() == false {
-			thttp.ErrorResponse(c, http.StatusBadRequest, "Ошибка валидации")
+		if !req.Validate() {
+			thttp.SendErrorResponse(c, http.StatusBadRequest, "validation error")
 		}
 
 		employeeId, err := strconv.ParseInt(id.EmployeeId, 10, 64)
@@ -217,14 +210,14 @@ func UpdateEmployee(logger *zap.SugaredLogger, employeeService *service.Employee
 		case err == nil:
 		case errors.Is(err, service.ErrNotFound):
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusNotFound, "Работник не найден")
+			thttp.SendErrorResponse(c, http.StatusNotFound, "employee not found")
 			return
 		default:
 			logger.Error(err.Error())
-			thttp.ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+			thttp.SendErrorResponse(c, http.StatusInternalServerError, "internal server error")
 			return
 		}
 
-		thttp.OkResponse(c)
+		thttp.SendOkResponse(c, nil)
 	}
 }
