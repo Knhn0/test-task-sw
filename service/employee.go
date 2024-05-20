@@ -11,12 +11,12 @@ import (
 )
 
 type EmployeeService struct {
-	employeeRepo   *employee.Impl
-	passportRepo   *passport.Impl
-	departmentRepo *department.Impl
+	employeeRepo   employee.Repo
+	passportRepo   passport.Repo
+	departmentRepo department.Repo
 }
 
-func NewUserService(repo *employee.Impl, passportRepo *passport.Impl, departmentRepo *department.Impl) *EmployeeService {
+func NewUserService(repo employee.Repo, passportRepo passport.Repo, departmentRepo department.Repo) *EmployeeService {
 	return &EmployeeService{
 		repo,
 		passportRepo,
@@ -73,7 +73,6 @@ func (e *EmployeeService) DeleteEmployee(ctx context.Context, employeeId int64) 
 }
 
 func (e *EmployeeService) GetEmployeeListByCompanyId(ctx context.Context, companyId int) ([]models.Employee, error) {
-	// нужно добавить ifExists
 	employees, err := e.employeeRepo.GetListByCompanyId(ctx, companyId)
 	switch {
 	case err == nil:
@@ -86,9 +85,6 @@ func (e *EmployeeService) GetEmployeeListByCompanyId(ctx context.Context, compan
 
 func (e *EmployeeService) GetEmployeeListByDepartmentName(ctx context.Context, departmentName string) ([]models.Employee, error) {
 	employees, err := e.employeeRepo.GetListByDepartmentName(ctx, departmentName)
-	if len(employees) == 0 {
-		return []models.Employee{}, ErrNotFound
-	}
 	switch {
 	case err == nil:
 	default:

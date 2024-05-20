@@ -3,8 +3,8 @@ package models
 import "regexp"
 
 var (
-	_passportRegex = regexp.MustCompile(`^[0-9]{10,}$`)
-	_phoneRegex    = regexp.MustCompile(`^[0-9()+]{14,}$`)
+	_passportRegex = regexp.MustCompile(`^[0-9]{10}$`)
+	_phoneRegex    = regexp.MustCompile(`^[0-9()+]{0,14}$`)
 )
 
 type Employee struct {

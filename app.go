@@ -27,9 +27,9 @@ type App struct {
 	pgDb *tpostgres.Postgres
 
 	//repos
-	employeeRepo   employee.Repo
 	passportRepo   passport.Repo
 	departmentRepo department.Repo
+	employeeRepo   employee.Repo
 
 	//services
 	employeeService *service.EmployeeService
@@ -67,9 +67,9 @@ func (a *App) initDatabases() error {
 	}
 
 	// Repos
-	a.employeeRepo = employee.NewRepository(a.pgDb)
 	a.passportRepo = passport.NewRepository(a.pgDb)
 	a.departmentRepo = department.NewRepository(a.pgDb)
+	a.employeeRepo = employee.NewRepository(a.pgDb, a.passportRepo, a.departmentRepo)
 
 	return nil
 }

@@ -14,6 +14,6 @@ import (
 // @Router      /api/ping [get]
 func Ping() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		thttp.OkResponseWithResult(c, "pong")
+		thttp.SendOkResponse(c, "pong")
 	}
 }

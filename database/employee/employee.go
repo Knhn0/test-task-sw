@@ -22,11 +22,11 @@ type Repo interface {
 
 type Impl struct {
 	db             *tpostgres.Postgres
-	passportRepo   *passport.Impl
-	departmentRepo *department.Impl
+	passportRepo   passport.Repo
+	departmentRepo department.Repo
 }
 
-func NewRepository(db *tpostgres.Postgres, passportRepo *passport.Impl, departmentRepo *department.Impl) Repo {
+func NewRepository(db *tpostgres.Postgres, passportRepo passport.Repo, departmentRepo department.Repo) Repo {
 	return &Impl{
 		db:             db,
 		passportRepo:   passportRepo,
