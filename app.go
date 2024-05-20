@@ -8,8 +8,12 @@ import (
 	"net/http"
 	"test-task-sw/api"
 	"test-task-sw/config"
+	"test-task-sw/database/department"
+	"test-task-sw/database/employee"
+	"test-task-sw/database/passport"
 	"test-task-sw/lib/tctx"
 	"test-task-sw/lib/tpostgres"
+	"test-task-sw/service"
 )
 
 type App struct {
@@ -21,6 +25,14 @@ type App struct {
 
 	//db
 	pgDb *tpostgres.Postgres
+
+	//repos
+	passportRepo   passport.Repo
+	departmentRepo department.Repo
+	employeeRepo   employee.Repo
+
+	//services
+	employeeService *service.EmployeeService
 }
 
 func NewApp(logger *zap.SugaredLogger, cfg config.Config, contextProvider tctx.DefaultContextProviderFunc) (*App, error) {
@@ -55,16 +67,22 @@ func (a *App) initDatabases() error {
 	}
 
 	// Repos
+	a.passportRepo = passport.NewRepository(a.pgDb)
+	a.departmentRepo = department.NewRepository(a.pgDb)
+	a.employeeRepo = employee.NewRepository(a.pgDb, a.passportRepo, a.departmentRepo)
 
 	return nil
 }
 
 func (a *App) initServices() error {
 
+	a.employeeService = service.NewUserService(a.employeeRepo, a.passportRepo, a.departmentRepo)
+
 	a.Server = api.NewServer(
 		a.config.Port,
 		a.logger,
 		a.contextProvider,
+		a.employeeService,
 	)
 
 	return nil

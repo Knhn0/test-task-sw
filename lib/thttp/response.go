@@ -7,60 +7,29 @@ import (
 	"reflect"
 )
 
-type NoResult interface{}
-
-type ResponseOk ResponseWithDetails[NoResult]
-
-type ResponseError ResponseWithDetails[NoResult]
-
-type ResponseWithDetails[T any] struct {
-	Ok          bool   `json:"ok"`
-	Result      T      `json:"result,omitempty"`
-	ErrorCode   int    `json:"error_code,omitempty"`
-	Description string `json:"description,omitempty"`
+type ErrorResponse struct {
+	Message string `json:"message"`
 }
 
-func writeResponse[T any](c *gin.Context, r ResponseWithDetails[T]) {
+func SendOkResponse(c *gin.Context, response any) {
 	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(http.StatusOK)
 
-	if err := json.NewEncoder(c.Writer).Encode(r); err != nil {
-		// if error without result
-		if reflect.TypeOf(r.Result) != reflect.TypeOf(NoResult(nil)) {
-			_ = c.Error(err)
-			c.Writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		// if error with result
-		_ = c.Error(err)
-		ErrorResponse(c, http.StatusInternalServerError, "internal server error")
+	if reflect.TypeOf(response) == reflect.TypeOf(nil) {
 		return
 	}
+
+	responseJson, _ := json.Marshal(response)
+	_, _ = c.Writer.Write(responseJson)
 }
 
-func OkResponse(c *gin.Context) {
-	resp := ResponseWithDetails[NoResult]{
-		Ok: true,
-	}
+func SendErrorResponse(c *gin.Context, statusCode int, message string) {
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(statusCode)
 
-	writeResponse(c, resp)
-}
+	responseJson, _ := json.Marshal(ErrorResponse{
+		Message: message,
+	})
 
-func OkResponseWithResult[T any](c *gin.Context, result T) {
-	resp := ResponseWithDetails[T]{
-		Ok:     true,
-		Result: result,
-	}
-
-	writeResponse(c, resp)
-}
-
-func ErrorResponse(c *gin.Context, code int, msg string) {
-	resp := ResponseError{
-		Ok:          false,
-		ErrorCode:   code,
-		Description: msg,
-	}
-
-	writeResponse[NoResult](c, ResponseWithDetails[NoResult](resp))
+	_, _ = c.Writer.Write(responseJson)
 }

@@ -13,11 +13,12 @@ import (
 	"test-task-sw/api/handler"
 	_ "test-task-sw/docs"
 	"test-task-sw/lib/tctx"
+	"test-task-sw/service"
 	"time"
 )
 
 const (
-	_defaultShutdownTimeout = 3 * time.Second
+	defaultShutdownTimeout = 3 * time.Second
 )
 
 type Server struct {
@@ -30,7 +31,7 @@ func NewServer(
 	port int,
 	logger *zap.SugaredLogger,
 	contextProvider tctx.DefaultContextProviderFunc,
-	// userService *service.UserService,
+	employeeService *service.EmployeeService,
 ) *Server {
 	r := gin.New()
 
@@ -46,6 +47,15 @@ func NewServer(
 		{
 			serviceGroup.GET("/ping", handler.Ping())
 		}
+
+		employeeGroup := apiGroup.Group("/employee")
+		{
+			employeeGroup.POST("create", handler.CreateEmployee(logger, employeeService))
+			employeeGroup.DELETE("delete/:employeeId", handler.DeleteEmployee(logger, employeeService))
+			employeeGroup.GET("list/company/:companyId", handler.ListEmployeesByCompanyId(logger, employeeService))
+			employeeGroup.GET("list/department/:depName", handler.ListEmployeesByDepartment(logger, employeeService))
+			employeeGroup.PUT("update/:employeeId", handler.UpdateEmployee(logger, employeeService))
+		}
 	}
 	return &Server{
 		Server: &http.Server{
@@ -55,7 +65,7 @@ func NewServer(
 				return contextProvider()
 			},
 		},
-		shutdownTimeout: _defaultShutdownTimeout,
+		shutdownTimeout: defaultShutdownTimeout,
 	}
 }
 

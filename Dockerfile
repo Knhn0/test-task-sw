@@ -1,11 +1,11 @@
 # Step 1: Modules caching
-FROM golang:1.22.2-alpine3.18 as modules
+FROM golang:1.22.2 as modules
 COPY go.mod go.sum /modules/
 WORKDIR /modules
 RUN go mod download
 
 # Step 2: Builder
-FROM golang:1.21.3-alpine3.18 as builder
+FROM golang:1.22.2 as builder
 COPY --from=modules /go/pkg /go/pkg
 COPY . /app
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 
 # Step 3: Final
 FROM scratch
-COPY --from=builder /app/config /config
-COPY --from=builder /app/migration /migration
+COPY --from=builder /app/.config /.config
+COPY --from=builder /app/database/migration /database/migration
 COPY --from=builder /bin/app /app
 CMD ["/app"]
